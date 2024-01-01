@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// 计入当前的输入字符串
+static char *CUR_INPUT;
+
 // 输出错误信息
 static void error(char *fmt, ...) {
   // 可变参数存储在 va_list 中
@@ -16,6 +19,30 @@ static void error(char *fmt, ...) {
   vfprintf(stderr, fmt, va);
   fprintf(stderr, "\n");
   va_end(va);
+  exit(1);
+}
+
+// 指示错误出现的位置
+static void verror_at(char *loc, char *fmt, va_list va) {
+  // 输出源信息
+  fprintf(stderr, "%s\n", CUR_INPUT);
+
+  // 计算错误出现的位置并输出错误信息
+  int pos = loc - CUR_INPUT;
+  // %*s 将会打印 pos 长度的字符串，若参数不满足长度 pos ，则使用空格补全
+  fprintf(stderr, "%*s", pos, "");
+  // 指示符
+  fprintf(stderr, "^ ");
+  vfprintf(stderr, fmt, va);
+  fprintf(stderr, "\n");
+  va_end(va);
+}
+
+// 指示错误信息并退出程序
+static void error_at(char *loc, char *fmt, ...) {
+  va_list va;
+  va_start(va, fmt);
+  verror_at(loc, fmt, va);
   exit(1);
 }
 
@@ -34,6 +61,14 @@ struct Token {
   char *loc;      // 在被解析字符串中的位置
   int len;        // 长度
 };
+
+// 指示 token 解析出错，并退出程序
+static void error_token(Token *token, char *fmt, ...) {
+  va_list va;
+  va_start(va, fmt);
+  verror_at(token->loc, fmt, va);
+  exit(1);
+}
 
 // Token 构造函数
 static Token *new_token(TokenKind kind, char *start, char *end) {
@@ -55,7 +90,7 @@ static bool equal(Token *token, char *str) {
 // 跳过值与 str 相同的 token
 static Token *skip(Token *token, char *str) {
   if (!equal(token, str)) {
-    error("expect '%s'", str);
+    error_token(token, "expect '%s'", str);
   }
   return token->next;
 }
@@ -63,14 +98,15 @@ static Token *skip(Token *token, char *str) {
 // 返回 TK_NUM Token 的值
 static int get_num(Token *token) {
   if (token->kind != TK_NUM) {
-    error("expect a number");
+    error_token(token, "expect a number");
   }
   return token->val;
 }
 
 // 终结符解析
 // head -> token1 -> token2 -> token3
-static Token *tokenize(char *p) {
+static Token *tokenize() {
+  char *p = CUR_INPUT;
   Token head = {};
   Token *cur = &head;
   while (*p) {
@@ -100,7 +136,7 @@ static Token *tokenize(char *p) {
       continue;
     }
 
-    error("invalid token: %c", *p);
+    error_at(p, "invalid token");
   }
 
   // 解析结束之后追加一个 EOF
@@ -110,13 +146,11 @@ static Token *tokenize(char *p) {
 }
 
 int main(int argc, char **argv) {
-  if (argc != 2) {
-    fprintf(stderr, "%s: invalid number of arguments\n", argv[0]);
-    return 1;
-  }
-  char *p = argv[1];
+  if (argc != 2)
+    error("%s: invalid number of arguments", argv[0]);
 
-  Token *token = tokenize(p);
+  CUR_INPUT = argv[1];
+  Token *token = tokenize();
 
   printf("  .globl main\n");
   printf("main:\n");

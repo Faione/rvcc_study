@@ -1,7 +1,7 @@
+#include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,6 +45,10 @@ static void error_at(char *loc, char *fmt, ...) {
   verror_at(loc, fmt, va);
   exit(1);
 }
+
+//
+// 一、词法分析
+//
 
 typedef enum {
   TK_PUNCT, // 操作符: + -
@@ -129,13 +133,12 @@ static Token *tokenize() {
     }
 
     // 解析操作符
-    if (*p == '+' || *p == '-') {
+    if (ispunct(*p)) {
       cur->next = new_token(TK_PUNCT, p, p + 1);
       cur = cur->next;
       ++p;
       continue;
     }
-
     error_at(p, "invalid token");
   }
 
@@ -145,34 +148,215 @@ static Token *tokenize() {
   return head.next;
 }
 
+//
+// 二、语法分析， 生成AST
+//
+
+// AST 节点种类
+typedef enum {
+  ND_ADD,
+  ND_SUB,
+  ND_MUL,
+  ND_DIV,
+  ND_NUM,
+} NodeKind;
+
+typedef struct Node Node;
+struct Node {
+  NodeKind kind;
+  Node *lhs;
+  Node *rhs;
+  int val;
+};
+
+// Node 的构造方法
+static Node *new_node(NodeKind kind) {
+  Node *node = calloc(1, sizeof(Node));
+  node->kind = kind;
+  return node;
+}
+
+static Node *new_node_bin(NodeKind kind, Node *lhs, Node *rhs) {
+  Node *node = new_node(kind);
+  node->lhs = lhs;
+  node->rhs = rhs;
+  return node;
+}
+
+static Node *new_node_num(int val) {
+  Node *node = new_node(ND_NUM);
+  node->val = val;
+  return node;
+}
+
+// expr = mul ("+" mul | "-" mul)*
+//   expr 由多个 mul 相加减构成
+// mul = primary ("*" primary | "/" primary)*
+//   mul 由多个 primary 相乘除构成
+// primary = "(" expr ")" | num
+//   primary 可以是括号内的 expr 或 数字
+
+// rest 作为结果，指向剩余应当分析的 Token*, 并在传递中进行修改指向的 Token*
+// token 指向当前应当分析的 Token
+//  expr/mul/primary 从 token 开始分析, 并将无法分析的第一个 token 设置为 rest
+static Node *expr(Token **rest, Token *token);
+static Node *mul(Token **rest, Token *token);
+static Node *primary(Token **rest, Token *token);
+
+// expr = mul ("+" mul | "-" mul)*
+static Node *expr(Token **rest, Token *token) {
+  Node *node = mul(&token, token);
+
+  // 遍历并构造多个 mul
+  // expr 由多个 mul 相加减构成
+  // 因此在生成一个 mul 之后，需要判断后续的 token 是否为 +|-
+  // 来决定是否继续生成 mul，直到不能构成 mul
+  while (true) {
+    if (equal(token, "+")) {
+      node = new_node_bin(ND_ADD, node, mul(&token, token->next));
+      continue;
+    }
+
+    if (equal(token, "-")) {
+      node = new_node_bin(ND_SUB, node, mul(&token, token->next));
+      continue;
+    }
+    break;
+  }
+
+  // 完成一个 expr 构造后，移动 rest 不是 expr 的第一个 token
+  // 返回 expr AST 的根节点
+  *rest = token;
+  return node;
+}
+
+// mul = primary ("*" primary | "/" primary)*
+static Node *mul(Token **rest, Token *token) {
+  Node *node = primary(&token, token);
+
+  while (true) {
+    if (equal(token, "*")) {
+      node = new_node_bin(ND_MUL, node, primary(&token, token->next));
+      continue;
+    }
+    if (equal(token, "/")) {
+      node = new_node_bin(ND_DIV, node, primary(&token, token->next));
+      continue;
+    }
+    break;
+  }
+
+  *rest = token;
+  return node;
+}
+
+// primary = "(" expr ")" | num
+static Node *primary(Token **rest, Token *token) {
+  // "(" expr ")"
+  if (equal(token, "(")) {
+    Node *node = expr(&token, token->next);
+    *rest = skip(token, ")");
+    return node;
+  }
+
+  // num
+  if (token->kind == TK_NUM) {
+    Node *node = new_node_num(token->val);
+    *rest = token->next;
+    return node;
+  }
+
+  error_token(token, "expected an expression");
+  return NULL;
+}
+
+//
+// 三、语义分析，生成代码
+//
+
+// 生成的代码中，利用栈保存中间数据
+// 表达式中使用 a0, a1 两个寄存器保存算式中的数字
+// 多次运算的结果通过栈来进行保存
+// 当前预设数据长度为 64bit/8byte
+static int STACK_DEPTH;
+
+// 压栈
+// 将 a0 寄存器中的值压入栈中
+static void push(void) {
+  printf("  addi sp, sp, -8\n");
+  printf("  sd a0, 0(sp)\n");
+  STACK_DEPTH++;
+}
+
+// 出栈
+// 将栈顶的数据弹出到寄存器 reg 中
+static void pop(char *reg) {
+  printf("  ld %s, 0(sp)\n", reg);
+  printf("  addi sp, sp, 8\n");
+  STACK_DEPTH--;
+}
+
+// 词法分析
+// 生成代码
+static void gen_code(Node *node) {
+  // 若根节点为数字(叶子节点), 则只加载到 a0 寄存器中
+  if (node->kind == ND_NUM) {
+    printf("  li a0, %d\n", node->val);
+    return;
+  }
+
+  // 递归右节点
+  gen_code(node->rhs);
+  // 右侧的结果保存在 a0 中，压入到栈
+  push();
+  // 递归左节点
+  gen_code(node->lhs);
+  // 左侧结果保存在 a0 中
+  // 同时由于左侧计算完毕，栈回到递归右侧完毕时的状态
+  // 即栈顶的就是右子树的结果
+  pop("a1");
+
+  // 此时 a0 保存了 lhs 的结果，而 a1 保存了 rhs 的结果
+  switch (node->kind) {
+  case ND_ADD:
+    printf("  add a0, a0, a1\n");
+    return;
+  case ND_SUB:
+    printf("  sub a0, a0, a1\n");
+    return;
+  case ND_MUL:
+    printf("  mul a0, a0, a1\n");
+    return;
+  case ND_DIV:
+    printf("  div a0, a0, a1\n");
+    return;
+  default:
+    break;
+  }
+  error("invalid expression");
+}
+
 int main(int argc, char **argv) {
   if (argc != 2)
     error("%s: invalid number of arguments", argv[0]);
 
   CUR_INPUT = argv[1];
+  // 1. 词法分析
   Token *token = tokenize();
 
+  // 2. 语法分析
+  Node *node = expr(&token, token);
+
+  if (token->kind != TK_EOF)
+    error_token(token, "extra token");
+
+  // 3. 语义分析
   printf("  .globl main\n");
   printf("main:\n");
 
-  // 假设算式的第一个是数字
-  printf("  li a0, %d\n", get_num(token));
-  token = token->next;
+  gen_code(node);
 
-  // 遍历 token
-  while (token->kind != TK_EOF) {
-    if (equal(token, "+")) {
-      token = token->next;
-      printf("  addi a0, a0, %d\n", get_num(token));
-      token = token->next;
-      continue;
-    }
-
-    // 不是 +，则判断 -
-    token = skip(token, "-");
-    printf("  addi a0, a0, -%d\n", get_num(token));
-    token = token->next;
-  }
   printf("  ret\n");
+  assert(STACK_DEPTH == 0);
   return 0;
 }

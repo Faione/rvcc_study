@@ -159,6 +159,7 @@ typedef enum {
   ND_MUL,
   ND_DIV,
   ND_NUM,
+  ND_NEG,
 } NodeKind;
 
 typedef struct Node Node;
@@ -173,6 +174,12 @@ struct Node {
 static Node *new_node(NodeKind kind) {
   Node *node = calloc(1, sizeof(Node));
   node->kind = kind;
+  return node;
+}
+
+static Node *new_node_unary(NodeKind kind, Node *expr) {
+  Node *node = new_node(kind);
+  node->rhs = expr;
   return node;
 }
 
@@ -191,16 +198,21 @@ static Node *new_node_num(int val) {
 
 // expr = mul ("+" mul | "-" mul)*
 //   expr 由多个 mul 相加减构成
-// mul = primary ("*" primary | "/" primary)*
+// mul = unary ("*" unary | "/" unary)*
 //   mul 由多个 primary 相乘除构成
+// unary = ("+" | "-") unary | primary
+//   unary 支持一元运算符
 // primary = "(" expr ")" | num
 //   primary 可以是括号内的 expr 或 数字
 
-// rest 作为结果，指向剩余应当分析的 Token*, 并在传递中进行修改指向的 Token*
-// token 指向当前应当分析的 Token
-//  expr/mul/primary 从 token 开始分析, 并将无法分析的第一个 token 设置为 rest
+// 传入 Token** 与 Token*，
+// 前者作为结果，让调用者能够感知，后者则作为递归中传递的变量
+// 因此以下任何一个函数执行完毕之后
+// *rest 都必须指向待分析的下一个 token
+// 而参数 Token* 仅是值拷贝，对调用者来说不可感知
 static Node *expr(Token **rest, Token *token);
 static Node *mul(Token **rest, Token *token);
+static Node *unary(Token **rest, Token *token);
 static Node *primary(Token **rest, Token *token);
 
 // expr = mul ("+" mul | "-" mul)*
@@ -224,23 +236,23 @@ static Node *expr(Token **rest, Token *token) {
     break;
   }
 
-  // 完成一个 expr 构造后，移动 rest 不是 expr 的第一个 token
+  // 完成一个 expr 构造后，设置rest指向的为 不是 expr 的第一个 token
   // 返回 expr AST 的根节点
   *rest = token;
   return node;
 }
 
-// mul = primary ("*" primary | "/" primary)*
+// mul = unary ("*" unary | "/" unary)*
 static Node *mul(Token **rest, Token *token) {
-  Node *node = primary(&token, token);
+  Node *node = unary(&token, token);
 
   while (true) {
     if (equal(token, "*")) {
-      node = new_node_bin(ND_MUL, node, primary(&token, token->next));
+      node = new_node_bin(ND_MUL, node, unary(&token, token->next));
       continue;
     }
     if (equal(token, "/")) {
-      node = new_node_bin(ND_DIV, node, primary(&token, token->next));
+      node = new_node_bin(ND_DIV, node, unary(&token, token->next));
       continue;
     }
     break;
@@ -248,6 +260,23 @@ static Node *mul(Token **rest, Token *token) {
 
   *rest = token;
   return node;
+}
+
+// unary = ("+" | "-") unary | primary
+static Node *unary(Token **rest, Token *token) {
+  // + 一元运算符无影响，跳过即可
+  // unary无论如何都会调用 primary 进行 rest 的设置
+  // 因此递归调用 unary 时，传入 rest 即可
+  // 否则则需要在每次生成新节点后，手动地再设置 rest
+  if (equal(token, "+")) {
+    return unary(rest, token->next);
+  }
+
+  if (equal(token, "-")) {
+    return new_node_unary(ND_NEG, unary(rest, token->next));
+  }
+
+  return primary(rest, token);
 }
 
 // primary = "(" expr ")" | num
@@ -301,8 +330,19 @@ static void pop(char *reg) {
 static void gen_code(Node *node) {
   // 若根节点为数字(叶子节点), 则只加载到 a0 寄存器中
   if (node->kind == ND_NUM) {
+  }
+  switch (node->kind) {
+  case ND_NUM:
     printf("  li a0, %d\n", node->val);
     return;
+  case ND_NEG:
+    // 一元运算符子为单臂二叉树，子节点保留在右侧
+    // 因此向右递归直到遇到数字
+    gen_code(node->rhs);
+    printf("  neg a0, a0\n");
+    return;
+  default:
+    break;
   }
 
   // 递归右节点

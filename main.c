@@ -107,6 +107,22 @@ static int get_num(Token *token) {
   return token->val;
 }
 
+// 比较 str 是否以 sub_str 为开头
+static bool starts_with(char *str, char *sub_str) {
+  return strncmp(str, sub_str, strlen(sub_str)) == 0;
+}
+
+// 返回运算符长度
+static int read_punct(char *p) {
+  // 判断长度是否为 2
+  if (starts_with(p, "==") || starts_with(p, "!=") || starts_with(p, "<=") ||
+      starts_with(p, ">=")) {
+    return 2;
+  }
+
+  return ispunct(*p) ? 1 : 0;
+}
+
 // 终结符解析
 // head -> token1 -> token2 -> token3
 static Token *tokenize() {
@@ -133,12 +149,15 @@ static Token *tokenize() {
     }
 
     // 解析操作符
-    if (ispunct(*p)) {
-      cur->next = new_token(TK_PUNCT, p, p + 1);
+    int punct_len = read_punct(p);
+    if (punct_len) {
+      cur->next = new_token(TK_PUNCT, p, p + punct_len);
       cur = cur->next;
-      ++p;
+
+      p += punct_len;
       continue;
     }
+
     error_at(p, "invalid token");
   }
 
@@ -160,6 +179,10 @@ typedef enum {
   ND_DIV,
   ND_NUM,
   ND_NEG,
+  ND_EQ,
+  ND_NE,
+  ND_LT,
+  ND_LE,
 } NodeKind;
 
 typedef struct Node Node;
@@ -196,14 +219,13 @@ static Node *new_node_num(int val) {
   return node;
 }
 
-// expr = mul ("+" mul | "-" mul)*
-//   expr 由多个 mul 相加减构成
+// expr = equality
+// equality = relational ("==" relational | "!=" relational)*
+// relational = add ("<" add | "<=" add | ">" add | ">=" add)*
+// add = mul ("+" mul | "-" mul)*
 // mul = unary ("*" unary | "/" unary)*
-//   mul 由多个 primary 相乘除构成
 // unary = ("+" | "-") unary | primary
-//   unary 支持一元运算符
 // primary = "(" expr ")" | num
-//   primary 可以是括号内的 expr 或 数字
 
 // 传入 Token** 与 Token*，
 // 前者作为结果，让调用者能够感知，后者则作为递归中传递的变量
@@ -211,12 +233,70 @@ static Node *new_node_num(int val) {
 // *rest 都必须指向待分析的下一个 token
 // 而参数 Token* 仅是值拷贝，对调用者来说不可感知
 static Node *expr(Token **rest, Token *token);
+static Node *equality(Token **rest, Token *token);
+static Node *relational(Token **rest, Token *token);
+static Node *add(Token **rest, Token *token);
 static Node *mul(Token **rest, Token *token);
 static Node *unary(Token **rest, Token *token);
 static Node *primary(Token **rest, Token *token);
 
-// expr = mul ("+" mul | "-" mul)*
-static Node *expr(Token **rest, Token *token) {
+// expr = equality
+static Node *expr(Token **rest, Token *token) { return equality(rest, token); }
+
+// equality = relational ("==" relational | "!=" relational)*
+static Node *equality(Token **rest, Token *token) {
+  Node *node = relational(&token, token);
+  while (true) {
+    if (equal(token, "==")) {
+      node = new_node_bin(ND_EQ, node, relational(&token, token->next));
+      continue;
+    }
+
+    if (equal(token, "!=")) {
+      node = new_node_bin(ND_NE, node, relational(&token, token->next));
+      continue;
+    }
+    break;
+  }
+
+  *rest = token;
+  return node;
+}
+
+// relational = add ("<" add | "<=" add | ">" add | ">=" add)*
+static Node *relational(Token **rest, Token *token) {
+  Node *node = add(&token, token);
+
+  while (true) {
+    if (equal(token, "<")) {
+      node = new_node_bin(ND_LT, node, add(&token, token->next));
+      continue;
+    }
+
+    if (equal(token, "<=")) {
+      node = new_node_bin(ND_LE, node, add(&token, token->next));
+      continue;
+    }
+
+    // lhs > rhs == rhs < lhs
+    if (equal(token, ">")) {
+      node = new_node_bin(ND_LT, add(&token, token->next), node);
+      continue;
+    }
+
+    if (equal(token, ">=")) {
+      node = new_node_bin(ND_LE, add(&token, token->next), node);
+      continue;
+    }
+    break;
+  }
+
+  *rest = token;
+  return node;
+}
+
+// add = mul ("+" mul | "-" mul)*
+static Node *add(Token **rest, Token *token) {
   Node *node = mul(&token, token);
 
   // 遍历并构造多个 mul
@@ -369,6 +449,25 @@ static void gen_code(Node *node) {
     return;
   case ND_DIV:
     printf("  div a0, a0, a1\n");
+    return;
+  case ND_EQ:
+  case ND_NE:
+    printf("  xor a0, a0 ,a1\n");
+    if (node->kind == ND_EQ) {
+      // a0 = 1 if a0 = 0
+      printf("  seqz a0, a0\n");
+    } else {
+      // a0 = 1 if a0 != 0
+      printf("  snez a0, a0\n");
+    }
+    return;
+  case ND_LT:
+    printf("  slt a0, a0, a1\n");
+    return;
+  case ND_LE:
+    // a0 <= a1 == !(a1 < a0) == (a1 < a0) xor 1
+    printf("  slt a0, a1, a0\n");
+    printf("xori a0, a0, 1\n");
     return;
   default:
     break;

@@ -30,6 +30,9 @@ static Node *new_node_num(int val) {
   return node;
 }
 
+// program = stmt*
+// stmt = expr_stmt
+// expr_stmt = expr ";"
 // expr = equality
 // equality = relational ("==" relational | "!=" relational)*
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
@@ -43,6 +46,7 @@ static Node *new_node_num(int val) {
 // 因此以下任何一个函数执行完毕之后
 // *rest 都必须指向待分析的下一个 token
 // 而参数 Token* 仅是值拷贝，对调用者来说不可感知
+static Node *expr_stmt(Token **rest, Token *token);
 static Node *expr(Token **rest, Token *token);
 static Node *equality(Token **rest, Token *token);
 static Node *relational(Token **rest, Token *token);
@@ -50,6 +54,16 @@ static Node *add(Token **rest, Token *token);
 static Node *mul(Token **rest, Token *token);
 static Node *unary(Token **rest, Token *token);
 static Node *primary(Token **rest, Token *token);
+
+// stmt = expr_stmt
+static Node *stmt(Token **rest, Token *token) { return expr_stmt(rest, token); }
+
+// expr_stmt = expr ";"
+static Node *expr_stmt(Token **rest, Token *token) {
+  Node *node = new_node_unary(ND_EXPR_STMT, expr(&token, token));
+  *rest = skip(token, ";");
+  return node;
+}
 
 // expr = equality
 static Node *expr(Token **rest, Token *token) { return equality(rest, token); }
@@ -191,8 +205,11 @@ static Node *primary(Token **rest, Token *token) {
 }
 
 Node *parse(Token *token) {
-  Node *node = expr(&token, token);
-  if (token->kind != TK_EOF)
-    error_token(token, "extra token");
-  return node;
+  Node head = {};
+  Node *cur = &head;
+  while (token->kind != TK_EOF) {
+    cur->next = stmt(&token, token);
+    cur = cur->next;
+  };
+  return head.next;
 }

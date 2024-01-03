@@ -103,8 +103,10 @@ static int read_punct(char *p) {
 // 终结符解析
 // head -> token1 -> token2 -> token3
 Token *tokenize(char *p) {
+  CUR_INPUT = p;
   Token head = {};
   Token *cur = &head;
+
   while (*p) {
     // 跳过空白字符, \t \n
     if (isspace(*p)) {
@@ -129,7 +131,6 @@ Token *tokenize(char *p) {
     if (punct_len) {
       cur->next = new_token(TK_PUNCT, p, p + punct_len);
       cur = cur->next;
-
       p += punct_len;
       continue;
     }

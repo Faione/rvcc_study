@@ -1,4 +1,5 @@
 #include "rvcc.h"
+#include <assert.h>
 
 //
 // 三、语义分析，生成代码
@@ -96,12 +97,23 @@ void gen_expr(Node *node) {
   error("invalid expression");
 }
 
+static void gen_stmt(Node *node) {
+  if (node->kind == ND_EXPR_STMT) {
+    gen_expr(node->rhs);
+    return;
+  }
+
+  error("invalid statement");
+}
+
 void codegen(Node *node) {
   printf("  .globl main\n");
   printf("main:\n");
 
-  gen_expr(node);
-  printf("  ret\n");
+  for (Node *n = node; n; n = n->next) {
+    gen_stmt(n);
+    assert(STACK_DEPTH == 0);
+  }
 
-  assert(STACK_DEPTH == 0);
+  printf("  ret\n");
 }

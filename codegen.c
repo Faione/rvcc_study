@@ -1,5 +1,6 @@
 #include "rvcc.h"
 #include <assert.h>
+#include <stdio.h>
 
 //
 // 三、语义分析，生成代码
@@ -27,6 +28,17 @@ static void pop(char *reg) {
   STACK_DEPTH--;
 }
 
+// 计算给定节点的内存地址
+static void gen_addr(Node *node) {
+  if (node->kind == ND_VAR) {
+    int offset = (node->name - 'a') * 8;
+    printf("  addi a0, fp, %d\n", -offset);
+    return;
+  }
+
+  error("not an lvalue");
+}
+
 // 词法分析
 // 生成代码
 void gen_expr(Node *node) {
@@ -42,6 +54,21 @@ void gen_expr(Node *node) {
     // 因此向右递归直到遇到数字
     gen_expr(node->rhs);
     printf("  neg a0, a0\n");
+    return;
+  case ND_VAR:
+    gen_addr(node);
+    // 将变量代表的内存地址中的值读入到 a0 中
+    printf("  ld a0, 0(a0)\n");
+    return;
+  case ND_ASSIGN:
+    // 左值
+    gen_addr(node->lhs);
+    push();
+    // 右值
+    gen_expr(node->rhs);
+    // 栈上保存的是左值内存地址, 弹出到 a1 寄存器
+    pop("a1");
+    printf("  sd a0, 0(a1)\n");
     return;
   default:
     break;
@@ -110,10 +137,36 @@ void codegen(Node *node) {
   printf("  .globl main\n");
   printf("main:\n");
 
+  // 栈布局
+  //-------------------------------// sp
+  //              fp                  fp = sp-8
+  //-------------------------------// fp
+  //              'a'                 fp-8
+  //              'b'                 fp-16
+  //              ...
+  //              'z'                 fp-208
+  //-------------------------------// sp=sp-8-208
+  //           表达式计算
+  //-------------------------------//
+
+  // 将 fp 压入栈中
+  printf("  addi sp, sp, -8\n");
+  printf("  sd fp, 0(sp)\n");
+  // 将当前的 sp 设置为 fp
+  printf("  mv fp, sp\n");
+
+  // 为单字变量腾出 208(26*8) 字节的空间
+  printf("  addi sp, sp, -208\n");
+
   for (Node *n = node; n; n = n->next) {
     gen_stmt(n);
     assert(STACK_DEPTH == 0);
   }
 
+  // 恢复 sp
+  printf("  mv sp, fp\n");
+  // 恢复上一个 fp
+  printf("  ld fp, 0(sp)\n");
+  printf("  addi sp, sp, 8\n");
   printf("  ret\n");
 }

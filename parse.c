@@ -30,16 +30,23 @@ static Node *new_node_num(int val) {
   return node;
 }
 
+static Node *new_node_var(char name) {
+  Node *node = new_node(ND_VAR);
+  node->name = name;
+  return node;
+}
+
 // program = stmt*
 // stmt = expr_stmt
 // expr_stmt = expr ";"
-// expr = equality
+// expr = assign
+// assign = equality ("=" assign)?
 // equality = relational ("==" relational | "!=" relational)*
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 // add = mul ("+" mul | "-" mul)*
 // mul = unary ("*" unary | "/" unary)*
 // unary = ("+" | "-") unary | primary
-// primary = "(" expr ")" | num
+// primary = "(" expr ")" | ident｜ num
 
 // 传入 Token** 与 Token*，
 // 前者作为结果，让调用者能够感知，后者则作为递归中传递的变量
@@ -48,6 +55,7 @@ static Node *new_node_num(int val) {
 // 而参数 Token* 仅是值拷贝，对调用者来说不可感知
 static Node *expr_stmt(Token **rest, Token *token);
 static Node *expr(Token **rest, Token *token);
+static Node *assign(Token **rest, Token *token);
 static Node *equality(Token **rest, Token *token);
 static Node *relational(Token **rest, Token *token);
 static Node *add(Token **rest, Token *token);
@@ -65,8 +73,19 @@ static Node *expr_stmt(Token **rest, Token *token) {
   return node;
 }
 
-// expr = equality
-static Node *expr(Token **rest, Token *token) { return equality(rest, token); }
+// expr = assign
+static Node *expr(Token **rest, Token *token) { return assign(rest, token); }
+
+// assign = equality ("=" assign)?
+static Node *assign(Token **rest, Token *token) {
+  Node *node = equality(&token, token);
+
+  // a=b=1;
+  if (equal(token, "="))
+    node = new_node_bin(ND_ASSIGN, node, assign(&token, token->next));
+  *rest = token;
+  return node;
+}
 
 // equality = relational ("==" relational | "!=" relational)*
 static Node *equality(Token **rest, Token *token) {
@@ -184,12 +203,19 @@ static Node *unary(Token **rest, Token *token) {
   return primary(rest, token);
 }
 
-// primary = "(" expr ")" | num
+// primary = "(" expr ")" | ident｜ num
 static Node *primary(Token **rest, Token *token) {
   // "(" expr ")"
   if (equal(token, "(")) {
     Node *node = expr(&token, token->next);
     *rest = skip(token, ")");
+    return node;
+  }
+
+  // ident
+  if (token->kind == TK_IDENT) {
+    Node *node = new_node_var(*token->loc);
+    *rest = token->next;
     return node;
   }
 

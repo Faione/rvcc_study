@@ -125,6 +125,13 @@ Token *tokenize(char *p) {
       cur->len = p - old_p;
       continue;
     }
+    // 解析标记符
+    if ('a' <= *p && *p <= 'z') {
+      cur->next = new_token(TK_IDENT, p, p + 1);
+      cur = cur->next;
+      ++p;
+      continue;
+    }
 
     // 解析操作符
     int punct_len = read_punct(p);

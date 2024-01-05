@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
@@ -63,22 +65,40 @@ typedef enum {
   ND_NUM,
 } NodeKind;
 
+// AST 节点
 typedef struct Node Node;
+
+// 本地变量
+typedef struct Object Object;
+struct Object {
+  Object *next;
+  char *name; // 变量名称
+  int offset; // 相对栈顶的偏移量
+};
+
+// 函数
+typedef struct Function Function;
+struct Function {
+  Node *body;     // 函数体(AST)
+  Object *locals; // 本地变量链表头
+  int stack_size; // 栈大小
+};
+
 struct Node {
   NodeKind kind;
   Node *next;
   Node *lhs;
   Node *rhs;
-  char name; // 存储单字母ND_VAR的名称
+  Object *var; // 存储 ND_VAR 种类的变量信息
   int val;
 };
 
 // 语法解析入口函数
-Node *parse(Token *token);
+Function *parse(Token *token);
 
 //
 // 三、语义分析，生成代码
 //
 
 // 代码生成入口函数
-void codegen(Node *node);
+void codegen(Function *prog);

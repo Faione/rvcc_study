@@ -28,11 +28,28 @@ static void pop(char *reg) {
   STACK_DEPTH--;
 }
 
+// 将 n 对其到 align 的整数倍
+static int align_to(int n, int align) {
+  return (n + align - 1) / align * align;
+}
+
+// 计算每个 local var 相对于栈顶的便宜
+// 计算栈的长度，并对齐到 16
+static void assign_local_val_offsets(Function *prog) {
+  int offset = 0;
+  for (Object *var = prog->locals; var; var = var->next) {
+    offset += 8;
+    var->offset = -offset;
+  }
+
+  prog->stack_size = align_to(offset, 16);
+}
+
 // 计算给定节点的内存地址
 static void gen_addr(Node *node) {
+  // var 为指针，在 prog 中被修改后，同时也保存在 Node 中
   if (node->kind == ND_VAR) {
-    int offset = (node->name - 'a') * 8;
-    printf("  addi a0, fp, %d\n", -offset);
+    printf("  addi a0, fp, %d\n", node->var->offset);
     return;
   }
 
@@ -133,19 +150,17 @@ static void gen_stmt(Node *node) {
   error("invalid statement");
 }
 
-void codegen(Node *node) {
+void codegen(Function *prog) {
+  assign_local_val_offsets(prog);
   printf("  .globl main\n");
   printf("main:\n");
 
   // 栈布局
   //-------------------------------// sp
-  //              fp                  fp = sp-8
-  //-------------------------------// fp
-  //              'a'                 fp-8
-  //              'b'                 fp-16
-  //              ...
-  //              'z'                 fp-208
-  //-------------------------------// sp=sp-8-208
+  //              fp
+  //-------------------------------// fp = sp-8
+  //             变量
+  //-------------------------------// sp = sp-8-StackSize
   //           表达式计算
   //-------------------------------//
 
@@ -156,9 +171,9 @@ void codegen(Node *node) {
   printf("  mv fp, sp\n");
 
   // 为单字变量腾出 208(26*8) 字节的空间
-  printf("  addi sp, sp, -208\n");
+  printf("  addi sp, sp, -%d\n", prog->stack_size);
 
-  for (Node *n = node; n; n = n->next) {
+  for (Node *n = prog->body; n; n = n->next) {
     gen_stmt(n);
     assert(STACK_DEPTH == 0);
   }

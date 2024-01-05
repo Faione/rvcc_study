@@ -52,6 +52,7 @@ void error_token(Token *token, char *fmt, ...) {
 }
 
 // Token 构造函数
+// [start, end)
 static Token *new_token(TokenKind kind, char *start, char *end) {
   Token *token = calloc(1, sizeof(Token));
   token->kind = kind;
@@ -87,6 +88,18 @@ static int get_num(Token *token) {
 // 比较 str 是否以 sub_str 为开头
 static bool starts_with(char *str, char *sub_str) {
   return strncmp(str, sub_str, strlen(sub_str)) == 0;
+}
+
+// 标识符首字母判断
+// [a-zA-Z_]
+static bool is_ident_head(char c) {
+  return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || '_' == c;
+}
+
+// 标识符非首字母判断
+// [a-zA-Z0-9_]
+static bool is_ident_rest(char c) {
+  return is_ident_head(c) || ('0' <= c && c <= '9');
 }
 
 // 返回运算符长度
@@ -125,11 +138,16 @@ Token *tokenize(char *p) {
       cur->len = p - old_p;
       continue;
     }
+
     // 解析标记符
-    if ('a' <= *p && *p <= 'z') {
-      cur->next = new_token(TK_IDENT, p, p + 1);
+    // [a-zA-Z_][a-zA-Z0-9_]*
+    if (is_ident_head(*p)) {
+      char *start = p;
+      do {
+        ++p;
+      } while (is_ident_rest(*p));
+      cur->next = new_token(TK_IDENT, start, p);
       cur = cur->next;
-      ++p;
       continue;
     }
 

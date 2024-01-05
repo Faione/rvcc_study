@@ -8,10 +8,10 @@ int main(int argc, char **argv) {
   Token *token = tokenize(argv[1]);
 
   // 2. 语法分析
-  Node *node = parse(token);
+  Function *prog = parse(token);
 
   // 3. 语义分析
-  codegen(node);
+  codegen(prog);
 
   return 0;
 }

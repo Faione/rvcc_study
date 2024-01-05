@@ -1,4 +1,6 @@
 #include "rvcc.h"
+#include <stdlib.h>
+#include <string.h>
 
 //
 // 二、语法分析， 生成AST
@@ -30,10 +32,36 @@ static Node *new_node_num(int val) {
   return node;
 }
 
-static Node *new_node_var(char name) {
+static Node *new_node_var(Object *var) {
   Node *node = new_node(ND_VAR);
-  node->name = name;
+  node->var = var;
   return node;
+}
+
+// 变量实例均保存在全局的 LOCALS 链表中
+Object *LOCALS;
+
+// 创建以 Local 变量，并头插到 LOCALS 中
+static Object *new_local_var(char *name) {
+  Object *var = calloc(1, sizeof(Object));
+  var->name = name;
+
+  // 头插法
+  var->next = LOCALS;
+  LOCALS = var;
+  return var;
+}
+
+// 寻找 LOCALS 中是否有与 ident token 同名的变量
+static Object *find_var_by_token(Token *token) {
+  for (Object *var = LOCALS; var; var = var->next) {
+    // 简单判断 -> 负载判断, 提升效率
+    if (strlen(var->name) == token->len &&
+        !strncmp(token->loc, var->name, token->len))
+      return var;
+  }
+
+  return NULL;
 }
 
 // program = stmt*
@@ -214,9 +242,13 @@ static Node *primary(Token **rest, Token *token) {
 
   // ident
   if (token->kind == TK_IDENT) {
-    Node *node = new_node_var(*token->loc);
+    Object *var = find_var_by_token(token);
+    if (!var)
+      // token变量名称并不是字符串，因此在此处拷贝一份并生成字符串
+      var = new_local_var(strndup(token->loc, token->len));
+
     *rest = token->next;
-    return node;
+    return new_node_var(var);
   }
 
   // num
@@ -230,12 +262,18 @@ static Node *primary(Token **rest, Token *token) {
   return NULL;
 }
 
-Node *parse(Token *token) {
+Function *parse(Token *token) {
   Node head = {};
   Node *cur = &head;
+
+  // parse stmt
   while (token->kind != TK_EOF) {
     cur->next = stmt(&token, token);
     cur = cur->next;
   };
-  return head.next;
+
+  Function *prog = calloc(1, sizeof(Function));
+  prog->body = head.next;
+  prog->locals = LOCALS;
+  return prog;
 }

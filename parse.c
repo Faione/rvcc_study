@@ -67,7 +67,7 @@ static Object *find_var_by_token(Token *token) {
 // program = "{" compoundStmt
 // compoundStmt = stmt* "}"
 // stmt = "return" expr ";"| "{" compoundStmt | expr_stmt
-// expr_stmt = expr ";"
+// expr_stmt = expr? ";"
 // expr = assign
 // assign = equality ("=" assign)?
 // equality = relational ("==" relational | "!=" relational)*
@@ -126,8 +126,13 @@ PARSER_DEFINE(stmt) {
   return expr_stmt(rest, token);
 }
 
-// expr_stmt = expr ";"
+// expr_stmt = expr? ";"
 PARSER_DEFINE(expr_stmt) {
+  if (equal(token, ";")) {
+    *rest = token->next;
+    return new_node(ND_BLOCK);
+  }
+
   Node *node = new_node_unary(ND_EXPR_STMT, expr(&token, token));
   *rest = skip(token, ";");
   return node;

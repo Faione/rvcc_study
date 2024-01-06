@@ -113,6 +113,15 @@ static int read_punct(char *p) {
   return ispunct(*p) ? 1 : 0;
 }
 
+// 将符合关键字的 token 类型修改为 TK_KEYWORD
+static void convert_keywords(Token *token) {
+  for (Token *t = token; t; t = t->next) {
+    if (equal(t, "return")) {
+      t->kind = TK_KEYWORD;
+    }
+  }
+}
+
 // 终结符解析
 // head -> token1 -> token2 -> token3
 Token *tokenize(char *p) {
@@ -165,6 +174,9 @@ Token *tokenize(char *p) {
 
   // 解析结束之后追加一个 EOF
   cur->next = new_token(TK_EOF, p, p);
+
+  convert_keywords(head.next);
+
   // head 实际是一个 dummy head
   return head.next;
 }

@@ -147,6 +147,18 @@ static void gen_stmt(Node *node) {
     return;
   }
 
+  switch (node->kind) {
+  case ND_EXPR_STMT:
+    gen_expr(node->rhs);
+    return;
+  case ND_RETURN:
+    gen_expr(node->rhs);
+    printf("  j .L.return\n");
+    return;
+  default:
+    break;
+  }
+
   error("invalid statement");
 }
 
@@ -178,6 +190,8 @@ void codegen(Function *prog) {
     assert(STACK_DEPTH == 0);
   }
 
+  // return 标签
+  printf(".L.return:\n");
   // 恢复 sp
   printf("  mv sp, fp\n");
   // 恢复上一个 fp

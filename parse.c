@@ -65,7 +65,7 @@ static Object *find_var_by_token(Token *token) {
 }
 
 // program = stmt*
-// stmt = expr_stmt
+// stmt =  "return" expr ";"| expr_stmt
 // expr_stmt = expr ";"
 // expr = assign
 // assign = equality ("=" assign)?
@@ -91,8 +91,17 @@ static Node *mul(Token **rest, Token *token);
 static Node *unary(Token **rest, Token *token);
 static Node *primary(Token **rest, Token *token);
 
-// stmt = expr_stmt
-static Node *stmt(Token **rest, Token *token) { return expr_stmt(rest, token); }
+// stmt =  "return" expr ";"| expr_stmt
+static Node *stmt(Token **rest, Token *token) {
+
+  if (token->kind == TK_KEYWORD && equal(token, "return")) {
+    Node *node = new_node_unary(ND_RETURN, expr(&token, token->next));
+    *rest = skip(token, ";");
+    return node;
+  }
+
+  return expr_stmt(rest, token);
+}
 
 // expr_stmt = expr ";"
 static Node *expr_stmt(Token **rest, Token *token) {

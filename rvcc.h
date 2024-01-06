@@ -62,6 +62,7 @@ typedef enum {
   ND_LE,
   ND_ASSIGN,    // 赋值
   ND_RETURN,    // 返回
+  ND_BLOCK,     // { ... } 代码块
   ND_EXPR_STMT, // 表达式
   ND_VAR,       // 变量
   ND_NUM,
@@ -91,6 +92,9 @@ struct Node {
   Node *next;
   Node *lhs;
   Node *rhs;
+
+  Node *body; // 代码块
+
   Object *var; // 存储 ND_VAR 种类的变量信息
   int val;
 };

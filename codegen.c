@@ -142,11 +142,6 @@ void gen_expr(Node *node) {
 }
 
 static void gen_stmt(Node *node) {
-  if (node->kind == ND_EXPR_STMT) {
-    gen_expr(node->rhs);
-    return;
-  }
-
   switch (node->kind) {
   case ND_EXPR_STMT:
     gen_expr(node->rhs);
@@ -154,6 +149,11 @@ static void gen_stmt(Node *node) {
   case ND_RETURN:
     gen_expr(node->rhs);
     printf("  j .L.return\n");
+    return;
+  case ND_BLOCK:
+    for (Node *n = node->body; n; n = n->next) {
+      gen_stmt(n);
+    }
     return;
   default:
     break;
@@ -185,10 +185,8 @@ void codegen(Function *prog) {
   // 为单字变量腾出 208(26*8) 字节的空间
   printf("  addi sp, sp, -%d\n", prog->stack_size);
 
-  for (Node *n = prog->body; n; n = n->next) {
-    gen_stmt(n);
-    assert(STACK_DEPTH == 0);
-  }
+  gen_stmt(prog->body);
+  assert(STACK_DEPTH == 0);
 
   // return 标签
   printf(".L.return:\n");

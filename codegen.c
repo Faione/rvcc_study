@@ -183,19 +183,11 @@ static void gen_stmt(Node *node) {
     printf(".L.end.%d:\n", c);
     return;
   }
-  case ND_FOR: {
-    //   init stmt
-    // begin label:
-    //   condition expr
-    //   beqz to end label
-    //   then stmt
-    //   inc expr
-    //   j to cond label
-    // end label:
-
+  case ND_FOR: { // 生成 for 或 while 循环代码
     int c = count();
 
-    gen_stmt(node->init);
+    if (node->init)
+      gen_stmt(node->init);
     printf(".L.begin.%d:", c);
     // 循环条件
     if (node->cond)

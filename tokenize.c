@@ -116,7 +116,7 @@ static int read_punct(char *p) {
 
 // 判断 ident token 是否在 keywords 中
 static bool is_keyword(Token *token) {
-  static char *keywords[] = {"return", "if", "else", "for"};
+  static char *keywords[] = {"return", "if", "else", "for", "while"};
 
   for (int i = 0; i < sizeof(keywords) / sizeof(*keywords); i++) {
     if (equal(token, keywords[i])) {

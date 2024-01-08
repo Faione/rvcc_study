@@ -69,6 +69,7 @@ static Object *find_var_by_token(Token *token) {
 // stmt = "return" expr ";"|
 //        "if" "(" expr ")" stmt ("else" stmt)?
 //        "for" "(" expr_stmt expr? ";" expr? ")" stmt
+//        "while" "(" expr ")" stmt
 //        "{" compoundStmt |
 //        expr_stmt |
 // expr_stmt = expr? ";"
@@ -117,6 +118,7 @@ PARSER_DEFINE(compound_stmt) {
 // stmt = "return" expr ";"|
 //        "if" "(" expr ")" stmt ("else" stmt)?
 //        "for" "(" expr_stmt expr? ";" expr? ")" stmt
+//        "while" "(" expr ")" stmt
 //        "{" compoundStmt |
 //        expr_stmt |
 PARSER_DEFINE(stmt) {
@@ -155,6 +157,15 @@ PARSER_DEFINE(stmt) {
       node->inc = expr(&token, token);
     token = skip(token, ")");
 
+    node->then = stmt(rest, token);
+    return node;
+  }
+
+  if (equal(token, "while")) {
+    Node *node = new_node(ND_FOR);
+    token = skip(token->next, "(");
+    node->cond = expr(&token, token);
+    token = skip(token, ")");
     node->then = stmt(rest, token);
     return node;
   }

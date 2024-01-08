@@ -66,7 +66,10 @@ static Object *find_var_by_token(Token *token) {
 
 // program = "{" compoundStmt
 // compoundStmt = stmt* "}"
-// stmt = "return" expr ";"| "{" compoundStmt | expr_stmt
+// stmt = "return" expr ";"|
+//        "{" compoundStmt |
+//        expr_stmt |
+//        "if" "(" expr ")" stmt ("else" stmt)?
 // expr_stmt = expr? ";"
 // expr = assign
 // assign = equality ("=" assign)?
@@ -110,15 +113,33 @@ PARSER_DEFINE(compound_stmt) {
   return node;
 }
 
-// stmt = "return" expr ";"| "{" compoundStmt | expr_stmt
+// stmt = "return" expr ";"|
+//        "if" "(" expr ")" stmt ("else" stmt)?
+//        "{" compoundStmt |
+//        expr_stmt |
 PARSER_DEFINE(stmt) {
 
-  if (token->kind == TK_KEYWORD && equal(token, "return")) {
+  // 解析 return 语句
+  if (equal(token, "return")) {
     Node *node = new_node_unary(ND_RETURN, expr(&token, token->next));
     *rest = skip(token, ";");
     return node;
   }
 
+  // 解析 if 语句
+  if (equal(token, "if")) {
+    Node *node = new_node(ND_IF);
+    token = skip(token->next, "(");
+    node->cond = expr(&token, token);
+    token = skip(token, ")");
+    node->then = stmt(&token, token);
+    if (equal(token, "else"))
+      node->els = stmt(&token, token->next);
+    *rest = token;
+    return node;
+  }
+
+  // 解析代码块
   if (equal(token, "{")) {
     return compound_stmt(rest, token->next);
   }

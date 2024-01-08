@@ -20,6 +20,11 @@ static void push(void) {
   STACK_DEPTH++;
 }
 
+static int count(void) {
+  static int I = 1;
+  return I++;
+}
+
 // 出栈
 // 将栈顶的数据弹出到寄存器 reg 中
 static void pop(char *reg) {
@@ -155,6 +160,35 @@ static void gen_stmt(Node *node) {
       gen_stmt(n);
     }
     return;
+  case ND_IF: {
+
+    // condition expr
+    // beqz to else
+    // then
+    // else stmt
+    // end
+
+    int c = count();
+
+    // condition
+    gen_expr(node->cond);
+    // a0为0则跳转到 else
+    printf("  beqz a0, .L.else.%d\n", c);
+
+    // then 逻辑
+    gen_stmt(node->then);
+    // 跳转到 if 语句末尾
+    printf("  j .L.end.%d\n", c);
+
+    // else 逻辑
+    printf(".L.else.%d:\n", c);
+    if (node->els)
+      gen_stmt(node->els);
+    // end 标签
+    printf(".L.end.%d:\n", c);
+    return;
+  }
+
   default:
     break;
   }

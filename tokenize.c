@@ -1,4 +1,5 @@
 #include "rvcc.h"
+#include <stdbool.h>
 //
 // 一、词法分析
 //
@@ -113,10 +114,23 @@ static int read_punct(char *p) {
   return ispunct(*p) ? 1 : 0;
 }
 
+static char *keywords[] = {"return", "if", "else"};
+
+// 判断 ident token 是否在 keywords 中
+static bool is_keyword(Token *token) {
+  for (int i = 0; i < sizeof(keywords) / sizeof(*keywords); i++) {
+    if (equal(token, keywords[i])) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // 将符合关键字的 token 类型修改为 TK_KEYWORD
 static void convert_keywords(Token *token) {
   for (Token *t = token; t; t = t->next) {
-    if (equal(t, "return")) {
+    if (is_keyword(token)) {
       t->kind = TK_KEYWORD;
     }
   }

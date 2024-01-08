@@ -67,9 +67,10 @@ static Object *find_var_by_token(Token *token) {
 // program = "{" compoundStmt
 // compoundStmt = stmt* "}"
 // stmt = "return" expr ";"|
+//        "if" "(" expr ")" stmt ("else" stmt)?
+//        "for" "(" expr_stmt expr? ";" expr? ")" stmt
 //        "{" compoundStmt |
 //        expr_stmt |
-//        "if" "(" expr ")" stmt ("else" stmt)?
 // expr_stmt = expr? ";"
 // expr = assign
 // assign = equality ("=" assign)?
@@ -115,6 +116,7 @@ PARSER_DEFINE(compound_stmt) {
 
 // stmt = "return" expr ";"|
 //        "if" "(" expr ")" stmt ("else" stmt)?
+//        "for" "(" expr_stmt expr? ";" expr? ")" stmt
 //        "{" compoundStmt |
 //        expr_stmt |
 PARSER_DEFINE(stmt) {
@@ -136,6 +138,24 @@ PARSER_DEFINE(stmt) {
     if (equal(token, "else"))
       node->els = stmt(&token, token->next);
     *rest = token;
+    return node;
+  }
+
+  // 解析 for 语句
+  if (equal(token, "for")) {
+    Node *node = new_node(ND_FOR);
+    token = skip(token->next, "(");
+    node->init = expr_stmt(&token, token);
+
+    if (!equal(token, ";"))
+      node->cond = expr(&token, token);
+    token = skip(token, ";");
+
+    if (!equal(token, ")"))
+      node->inc = expr(&token, token);
+    token = skip(token, ")");
+
+    node->then = stmt(rest, token);
     return node;
   }
 

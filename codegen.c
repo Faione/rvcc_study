@@ -20,6 +20,8 @@ static void push(void) {
   STACK_DEPTH++;
 }
 
+// 每次调用都会生成一个新的 count
+// 用来区分不同的代码段
 static int count(void) {
   static int I = 1;
   return I++;
@@ -161,13 +163,6 @@ static void gen_stmt(Node *node) {
     }
     return;
   case ND_IF: {
-
-    // condition expr
-    // beqz to else
-    // then
-    // else stmt
-    // end
-
     int c = count();
 
     // condition
@@ -185,6 +180,34 @@ static void gen_stmt(Node *node) {
     if (node->els)
       gen_stmt(node->els);
     // end 标签
+    printf(".L.end.%d:\n", c);
+    return;
+  }
+  case ND_FOR: {
+    //   init stmt
+    // begin label:
+    //   condition expr
+    //   beqz to end label
+    //   then stmt
+    //   inc expr
+    //   j to cond label
+    // end label:
+
+    int c = count();
+
+    gen_stmt(node->init);
+    printf(".L.begin.%d:", c);
+    // 循环条件
+    if (node->cond)
+      gen_expr(node->cond);
+    // 若 a0 为0, 则跳转到 end
+    printf("  beqz a0, .L.end.%d\n", c);
+    // then逻辑
+    gen_stmt(node->then);
+    // 循环递增语句
+    if (node->inc)
+      gen_expr(node->inc);
+    printf("  j .L.begin.%d\n", c);
     printf(".L.end.%d:\n", c);
     return;
   }

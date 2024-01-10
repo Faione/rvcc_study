@@ -64,7 +64,7 @@ static void gen_addr(Node *node) {
     return;
   }
 
-  error("not an lvalue");
+  error_token(node->token, "not an lvalue");
 }
 
 // 词法分析
@@ -160,7 +160,7 @@ void gen_expr(Node *node) {
   default:
     break;
   }
-  error("invalid expression");
+  error_token(node->token, "invalid expression");
 }
 
 static void gen_stmt(Node *node) {
@@ -241,7 +241,7 @@ static void gen_stmt(Node *node) {
     break;
   }
 
-  error("invalid statement");
+  error_token(node->token, "invalid statement");
 }
 
 void codegen(Function *prog) {

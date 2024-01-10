@@ -90,6 +90,7 @@ struct Function {
 };
 
 struct Node {
+  Token *token; // 节点对应终结符
   NodeKind kind;
   Node *next;
   Node *lhs;

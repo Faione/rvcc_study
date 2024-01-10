@@ -7,33 +7,34 @@
 //
 
 // Node 的构造方法
-static Node *new_node(NodeKind kind) {
+static Node *new_node(NodeKind kind, Token *token) {
   Node *node = calloc(1, sizeof(Node));
   node->kind = kind;
+  node->token = token;
   return node;
 }
 
-static Node *new_node_unary(NodeKind kind, Node *expr) {
-  Node *node = new_node(kind);
+static Node *new_node_unary(NodeKind kind, Node *expr, Token *token) {
+  Node *node = new_node(kind, token);
   node->rhs = expr;
   return node;
 }
 
-static Node *new_node_bin(NodeKind kind, Node *lhs, Node *rhs) {
-  Node *node = new_node(kind);
+static Node *new_node_bin(NodeKind kind, Node *lhs, Node *rhs, Token *token) {
+  Node *node = new_node(kind, token);
   node->lhs = lhs;
   node->rhs = rhs;
   return node;
 }
 
-static Node *new_node_num(int val) {
-  Node *node = new_node(ND_NUM);
+static Node *new_node_num(int val, Token *token) {
+  Node *node = new_node(ND_NUM, token);
   node->val = val;
   return node;
 }
 
-static Node *new_node_var(Object *var) {
-  Node *node = new_node(ND_VAR);
+static Node *new_node_var(Object *var, Token *token) {
+  Node *node = new_node(ND_VAR, token);
   node->var = var;
   return node;
 }
@@ -104,12 +105,13 @@ PARSER_DEFINE(primary);
 PARSER_DEFINE(compound_stmt) {
   Node head = {};
   Node *cur = &head;
+  Node *node = new_node(ND_BLOCK, token);
+
   while (!equal(token, "}")) {
     cur->next = stmt(&token, token);
     cur = cur->next;
   }
 
-  Node *node = new_node(ND_BLOCK);
   node->body = head.next;
   *rest = token->next;
   return node;
@@ -125,14 +127,15 @@ PARSER_DEFINE(stmt) {
 
   // 解析 return 语句
   if (equal(token, "return")) {
-    Node *node = new_node_unary(ND_RETURN, expr(&token, token->next));
+    Node *node = new_node(ND_RETURN, token);
+    node->rhs = expr(&token, token->next);
     *rest = skip(token, ";");
     return node;
   }
 
   // 解析 if 语句
   if (equal(token, "if")) {
-    Node *node = new_node(ND_IF);
+    Node *node = new_node(ND_IF, token);
     token = skip(token->next, "(");
     node->cond = expr(&token, token);
     token = skip(token, ")");
@@ -145,7 +148,7 @@ PARSER_DEFINE(stmt) {
 
   // 解析 for 语句
   if (equal(token, "for")) {
-    Node *node = new_node(ND_FOR);
+    Node *node = new_node(ND_FOR, token);
     token = skip(token->next, "(");
     node->init = expr_stmt(&token, token);
 
@@ -162,7 +165,7 @@ PARSER_DEFINE(stmt) {
   }
 
   if (equal(token, "while")) {
-    Node *node = new_node(ND_FOR);
+    Node *node = new_node(ND_FOR, token);
     token = skip(token->next, "(");
     node->cond = expr(&token, token);
     token = skip(token, ")");
@@ -182,10 +185,11 @@ PARSER_DEFINE(stmt) {
 PARSER_DEFINE(expr_stmt) {
   if (equal(token, ";")) {
     *rest = token->next;
-    return new_node(ND_BLOCK);
+    return new_node(ND_BLOCK, token);
   }
 
-  Node *node = new_node_unary(ND_EXPR_STMT, expr(&token, token));
+  Node *node = new_node(ND_EXPR_STMT, token);
+  node->rhs = expr(&token, token);
   *rest = skip(token, ";");
   return node;
 }
@@ -199,7 +203,7 @@ PARSER_DEFINE(assign) {
 
   // a=b=1;
   if (equal(token, "="))
-    node = new_node_bin(ND_ASSIGN, node, assign(&token, token->next));
+    return new_node_bin(ND_ASSIGN, node, assign(rest, token->next), token);
   *rest = token;
   return node;
 }
@@ -208,13 +212,14 @@ PARSER_DEFINE(assign) {
 PARSER_DEFINE(equality) {
   Node *node = relational(&token, token);
   while (true) {
+    Token *start = token;
     if (equal(token, "==")) {
-      node = new_node_bin(ND_EQ, node, relational(&token, token->next));
+      node = new_node_bin(ND_EQ, node, relational(&token, token->next), start);
       continue;
     }
 
     if (equal(token, "!=")) {
-      node = new_node_bin(ND_NE, node, relational(&token, token->next));
+      node = new_node_bin(ND_NE, node, relational(&token, token->next), start);
       continue;
     }
     break;
@@ -229,24 +234,25 @@ PARSER_DEFINE(relational) {
   Node *node = add(&token, token);
 
   while (true) {
+    Token *start = token;
     if (equal(token, "<")) {
-      node = new_node_bin(ND_LT, node, add(&token, token->next));
+      node = new_node_bin(ND_LT, node, add(&token, token->next), start);
       continue;
     }
 
     if (equal(token, "<=")) {
-      node = new_node_bin(ND_LE, node, add(&token, token->next));
+      node = new_node_bin(ND_LE, node, add(&token, token->next), start);
       continue;
     }
 
     // lhs > rhs == rhs < lhs
     if (equal(token, ">")) {
-      node = new_node_bin(ND_LT, add(&token, token->next), node);
+      node = new_node_bin(ND_LT, add(&token, token->next), node, start);
       continue;
     }
 
     if (equal(token, ">=")) {
-      node = new_node_bin(ND_LE, add(&token, token->next), node);
+      node = new_node_bin(ND_LE, add(&token, token->next), node, start);
       continue;
     }
     break;
@@ -265,13 +271,14 @@ PARSER_DEFINE(add) {
   // 因此在生成一个 mul 之后，需要判断后续的 token 是否为 +|-
   // 来决定是否继续生成 mul，直到不能构成 mul
   while (true) {
+    Token *start = token;
     if (equal(token, "+")) {
-      node = new_node_bin(ND_ADD, node, mul(&token, token->next));
+      node = new_node_bin(ND_ADD, node, mul(&token, token->next), start);
       continue;
     }
 
     if (equal(token, "-")) {
-      node = new_node_bin(ND_SUB, node, mul(&token, token->next));
+      node = new_node_bin(ND_SUB, node, mul(&token, token->next), start);
       continue;
     }
     break;
@@ -288,12 +295,13 @@ PARSER_DEFINE(mul) {
   Node *node = unary(&token, token);
 
   while (true) {
+    Token *start = token;
     if (equal(token, "*")) {
-      node = new_node_bin(ND_MUL, node, unary(&token, token->next));
+      node = new_node_bin(ND_MUL, node, unary(&token, token->next), start);
       continue;
     }
     if (equal(token, "/")) {
-      node = new_node_bin(ND_DIV, node, unary(&token, token->next));
+      node = new_node_bin(ND_DIV, node, unary(&token, token->next), start);
       continue;
     }
     break;
@@ -314,7 +322,7 @@ PARSER_DEFINE(unary) {
   }
 
   if (equal(token, "-")) {
-    return new_node_unary(ND_NEG, unary(rest, token->next));
+    return new_node_unary(ND_NEG, unary(rest, token->next), token);
   }
 
   return primary(rest, token);
@@ -337,12 +345,12 @@ PARSER_DEFINE(primary) {
       var = new_local_var(strndup(token->loc, token->len));
 
     *rest = token->next;
-    return new_node_var(var);
+    return new_node_var(var, token);
   }
 
   // num
   if (token->kind == TK_NUM) {
-    Node *node = new_node_num(token->val);
+    Node *node = new_node_num(token->val, token);
     *rest = token->next;
     return node;
   }

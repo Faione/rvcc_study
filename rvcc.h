@@ -61,6 +61,8 @@ typedef enum {
   ND_LT,
   ND_LE,
   ND_ASSIGN,    // 赋值
+  ND_ADDR,      // 取地址
+  ND_DEREF,     // 解引用
   ND_RETURN,    // 返回
   ND_IF,        // 条件判断
   ND_FOR,       //  for / while 循环

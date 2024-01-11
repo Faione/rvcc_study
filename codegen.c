@@ -12,6 +12,8 @@
 // 当前预设数据长度为 64bit/8byte
 static int STACK_DEPTH;
 
+static void gen_expr(Node *node);
+
 // 压栈
 // 将 a0 寄存器中的值压入栈中
 static void push(void) {
@@ -56,12 +58,18 @@ static void assign_local_val_offsets(Function *prog) {
 
 // 计算给定节点的内存地址
 static void gen_addr(Node *node) {
-  // var 为指针,在 prog 中被修改后,同时也保存在 Node 中
-  if (node->kind == ND_VAR) {
+
+  switch (node->kind) {
+  case ND_VAR: // Object var 为指针, 在 prog 中被修改后, 同时也能从 Node 访问
     printf("  # 获取变量%s的栈内地址为%d(fp)\n", node->var->name,
            node->var->offset);
     printf("  addi a0, fp, %d\n", node->var->offset);
     return;
+  case ND_DEREF: // 对一个解引用expr进行取地址
+    gen_expr(node->rhs);
+    return;
+  default:
+    break;
   }
 
   error_token(node->token, "not an lvalue");
@@ -70,11 +78,9 @@ static void gen_addr(Node *node) {
 // 词法分析
 // 生成代码
 void gen_expr(Node *node) {
-  // 若根节点为数字(叶子节点), 则只加载到 a0 寄存器中
-  if (node->kind == ND_NUM) {
-  }
   switch (node->kind) {
   case ND_NUM:
+    // 若根节点为数字(叶子节点), 则只加载到 a0 寄存器中
     printf("  # 将%d加载到a0中\n", node->val);
     printf("  li a0, %d\n", node->val);
     return;
@@ -84,6 +90,16 @@ void gen_expr(Node *node) {
     gen_expr(node->rhs);
     printf("  # 对a0值进行取反\n");
     printf("  neg a0, a0\n");
+    return;
+  case ND_ADDR:
+    // 计算单臂指向的变量的地址，保存到 a0 中
+    gen_addr(node->rhs);
+    return;
+  case ND_DEREF:
+    // 解引用向右递归
+    gen_expr(node->rhs);
+    printf("  # 读取 a0 中间接引用的值，存入到 a0中\n");
+    printf("  ld a0, 0(a0)\n");
     return;
   case ND_VAR:
     gen_addr(node);

@@ -80,7 +80,7 @@ static Object *find_var_by_token(Token *token) {
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 // add = mul ("+" mul | "-" mul)*
 // mul = unary ("*" unary | "/" unary)*
-// unary = ("+" | "-") unary | primary
+// unary = ("+" | "-" | "*" | "&") unary | primary
 // primary = "(" expr ")" | ident｜ num
 
 // 传入 Token** 与 Token*，
@@ -164,6 +164,7 @@ PARSER_DEFINE(stmt) {
     return node;
   }
 
+  // 解析 while 语句
   if (equal(token, "while")) {
     Node *node = new_node(ND_FOR, token);
     token = skip(token->next, "(");
@@ -178,6 +179,7 @@ PARSER_DEFINE(stmt) {
     return compound_stmt(rest, token->next);
   }
 
+  // 解析 expr
   return expr_stmt(rest, token);
 }
 
@@ -311,19 +313,28 @@ PARSER_DEFINE(mul) {
   return node;
 }
 
-// unary = ("+" | "-") unary | primary
+// unary = ("+" | "-" | "*" | "&") unary | primary
 PARSER_DEFINE(unary) {
   // + 一元运算符无影响，跳过即可
   // unary无论如何都会调用 primary 进行 rest 的设置
   // 因此递归调用 unary 时，传入 rest 即可
   // 否则则需要在每次生成新节点后，手动地再设置 rest
-  if (equal(token, "+")) {
-    return unary(rest, token->next);
-  }
 
-  if (equal(token, "-")) {
+  // "+" unary
+  if (equal(token, "+"))
+    return unary(rest, token->next);
+
+  // "+" unary
+  if (equal(token, "-"))
     return new_node_unary(ND_NEG, unary(rest, token->next), token);
-  }
+
+  // "*" unary
+  if (equal(token, "*"))
+    return new_node_unary(ND_DEREF, unary(rest, token->next), token);
+
+  // "&" unary
+  if (equal(token, "&"))
+    return new_node_unary(ND_ADDR, unary(rest, token->next), token);
 
   return primary(rest, token);
 }

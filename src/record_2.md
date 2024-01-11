@@ -1,14 +1,14 @@
-## 支持多段
+# 支持多段
 
 支持 `;` 分割多段表达式，每段都编译，执行时只有最后一段结果保留
 
-![stmt](./images/stmt.png)
+![stmt](./images/stmt.svg)
 
-**词法分析**
+## 词法分析
 
 `;` 包含在标点符号中，不必修改
 
-**语法分析**
+## 语法分析
 
 在原有的语法树的基础上，扩充对多个语段的支持， 在 Node 结构体中增加 `next` 字段, 指向不同的语段
 
@@ -61,7 +61,7 @@ Node *parse(Token *token) {
 }
 ```
 
-**语义分析**
+## 语义分析
 
 增加对于 ND_EXPR_STMT 类型的 Node 的解析
 
@@ -89,7 +89,7 @@ void codegen(Node *node) {
 
 ```
 
-## 支持单字母本地变量
+# 支持单字母本地变量
 
 本地变量是一种新的token，需要增加token种类
 本地变量代表的是内存地址，支持单字母本地变量需要为变量计算内存地址
@@ -97,13 +97,13 @@ void codegen(Node *node) {
 赋值是一种新的语法，需要新的语义分析，同时还需要支持 `a=b=c=1`的递归赋值
 
 
-![Alt text](./images/assign.png)
+![Alt text](./images/assign.svg)
 
-**词法分析**
+## 词法分析
 
 单字母对应[a,z], 增加相应的字符判断即可，同时增加 `ident` token种类
 
-**语法分析**
+## 语法分析
 
 更新形式语言
 
@@ -138,7 +138,7 @@ static Node *assign(Token **rest, Token *token) {
 primary 中增加对于 ident 解析
 ```
 
-**语义分析**
+## 语义分析
 
 
 栈布局

@@ -1,9 +1,9 @@
-## 支持 return
+# 支持 return
 
-![return](./images/return.png)
+![return](./images/return.svg)
 
 
-**词法分析**
+## 词法分析
 
 return 作为一种特殊的 ident，在完成token的初步生成之后，再对符合 keyword 的token 进行标记
 
@@ -18,7 +18,7 @@ static void convert_keywords(Token *token) {
 }
 ```
 
-**语法分析**
+## 语法分析
 
 形式语言中修改 stmt 的表达， 注意  ` "return" expr ";"` 与 `expr_stmt` 位于统一级别
 
@@ -41,7 +41,7 @@ static Node *stmt(Token **rest, Token *token) {
 }
 ```
 
-**语义分析**
+## 语义分析
 
 在程序末尾增一个 return 标签，而 return node 则会跳转到此 label
 
@@ -68,15 +68,15 @@ static void gen_stmt(Node *node) {
 }
 ```
 
-## 支持代码块
+# 支持代码块
 
-![Alt text](./images/codeblock.png)
+![Alt text](./images/codeblock.svg)
 
-**词法分析**
+## 词法分析
 
 `{ | }` 本身就是符号，无需进行修改
 
-**语法分析**
+## 语法分析
 
 增加 `ND_Block` 节点，修改推导式，同时约定每个 Funcion 必须从 ND_Block 开始
 
@@ -122,7 +122,7 @@ PARSER_DEFINE(stmt) {
 }
 ```
 
-**语义分析**
+## 语义分析
 
 ND_Block 也是 stmt， 同时也可以嵌套
 
@@ -149,9 +149,9 @@ static void gen_stmt(Node *node) {
 }
 ```
 
-## 允许空语句
+# 允许空语句
 
-**词法分析**
+## 词法分析
 
 允许 expr 为空
 

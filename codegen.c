@@ -66,7 +66,7 @@ static void gen_addr(Node *node) {
     printf("  addi a0, fp, %d\n", node->var->offset);
     return;
   case ND_DEREF: // 对一个解引用expr进行取地址
-    gen_expr(node->rhs);
+    gen_expr(node->lhs);
     return;
   default:
     break;
@@ -85,19 +85,19 @@ void gen_expr(Node *node) {
     printf("  li a0, %d\n", node->val);
     return;
   case ND_NEG:
-    // 一元运算符子为单臂二叉树,子节点保留在右侧
-    // 因此向右递归直到遇到数字
-    gen_expr(node->rhs);
+    // 一元运算符子为单臂二叉树,子节点保留在左侧
+    // 因此向左递归直到遇到数字
+    gen_expr(node->lhs);
     printf("  # 对a0值进行取反\n");
     printf("  neg a0, a0\n");
     return;
   case ND_ADDR:
     // 计算单臂指向的变量的地址，保存到 a0 中
-    gen_addr(node->rhs);
+    gen_addr(node->lhs);
     return;
   case ND_DEREF:
     // 解引用向右递归
-    gen_expr(node->rhs);
+    gen_expr(node->lhs);
     printf("  # 读取 a0 中间接引用的值，存入到 a0中\n");
     printf("  ld a0, 0(a0)\n");
     return;
@@ -182,11 +182,11 @@ void gen_expr(Node *node) {
 static void gen_stmt(Node *node) {
   switch (node->kind) {
   case ND_EXPR_STMT:
-    gen_expr(node->rhs);
+    gen_expr(node->lhs);
     return;
   case ND_RETURN:
     printf("# 返回语句\n");
-    gen_expr(node->rhs);
+    gen_expr(node->lhs);
     printf("  # 跳转到.L.return段\n");
     printf("  j .L.return\n");
     return;

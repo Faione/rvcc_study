@@ -1,6 +1,4 @@
 #include "rvcc.h"
-#include <stdlib.h>
-#include <string.h>
 
 //
 // 二、语法分析， 生成AST
@@ -16,7 +14,8 @@ static Node *new_node(NodeKind kind, Token *token) {
 
 static Node *new_node_unary(NodeKind kind, Node *expr, Token *token) {
   Node *node = new_node(kind, token);
-  node->rhs = expr;
+  // 单臂默认使用 lhs
+  node->lhs = expr;
   return node;
 }
 
@@ -37,6 +36,68 @@ static Node *new_node_var(Object *var, Token *token) {
   Node *node = new_node(ND_VAR, token);
   node->var = var;
   return node;
+}
+
+// 创建ADD节点
+// num | ptr + num | ptr
+// 未声明 Type，上层会使类型与 lhs 相同
+static Node *new_node_add(Node *lhs, Node *rhs, Token *token) {
+  add_type(lhs);
+  add_type(rhs);
+
+  // num + num
+  if (is_integer(lhs->type) && is_integer(rhs->type)) {
+    return new_node_bin(ND_ADD, lhs, rhs, token);
+  }
+
+  // ptr + ptr
+  // invalid
+  if (lhs->type->base && rhs->type->base)
+    error_token(token, "invalid operands");
+
+  // num + ptr
+  // change to  ptr + num
+  if (!lhs->type->base && rhs->type->base) {
+    Node *temp = lhs;
+    lhs = rhs;
+    rhs = temp;
+  }
+
+  // 将 ptr + num 转化为 ptr + (num * 8) 从而计算地址
+  rhs = new_node_bin(ND_MUL, rhs, new_node_num(8, token), token);
+  return new_node_bin(ND_ADD, lhs, rhs, token);
+}
+
+// 创建SUB节点
+// num | ptr - num | ptr
+// 未声明 Type，上层会使类型与 lhs 相同
+static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
+  add_type(lhs);
+  add_type(rhs);
+
+  // num + num
+  if (is_integer(lhs->type) && is_integer(rhs->type)) {
+    return new_node_bin(ND_SUB, lhs, rhs, token);
+  }
+
+  // ptr - num
+  if (lhs->type->base && is_integer(rhs->type)) {
+    rhs = new_node_bin(ND_MUL, rhs, new_node_num(8, token), token);
+    return new_node_bin(ND_SUB, lhs, rhs, token);
+  }
+
+  // ptr - ptr
+  // 计算两个指针之间由多少元素
+  if (lhs->type->base && rhs->type->base) {
+    Node *node = new_node_bin(ND_SUB, lhs, rhs, token);
+    // 注意 ptr - ptr 的类型应当为 INT, 这样才有意义
+    node->type = TYPE_INT;
+    return new_node_bin(ND_DIV, node, new_node_num(8, token), token);
+  }
+
+  // num - ptr
+  error_token(token, "invalid operands");
+  return NULL;
 }
 
 // 变量实例均保存在全局的 LOCALS 链表中
@@ -110,6 +171,8 @@ PARSER_DEFINE(compound_stmt) {
   while (!equal(token, "}")) {
     cur->next = stmt(&token, token);
     cur = cur->next;
+    // 构造 stmt AST 之后，进行 add_type
+    add_type(cur);
   }
 
   node->body = head.next;
@@ -128,7 +191,7 @@ PARSER_DEFINE(stmt) {
   // 解析 return 语句
   if (equal(token, "return")) {
     Node *node = new_node(ND_RETURN, token);
-    node->rhs = expr(&token, token->next);
+    node->lhs = expr(&token, token->next);
     *rest = skip(token, ";");
     return node;
   }
@@ -191,7 +254,7 @@ PARSER_DEFINE(expr_stmt) {
   }
 
   Node *node = new_node(ND_EXPR_STMT, token);
-  node->rhs = expr(&token, token);
+  node->lhs = expr(&token, token);
   *rest = skip(token, ";");
   return node;
 }
@@ -275,12 +338,12 @@ PARSER_DEFINE(add) {
   while (true) {
     Token *start = token;
     if (equal(token, "+")) {
-      node = new_node_bin(ND_ADD, node, mul(&token, token->next), start);
+      node = new_node_add(node, mul(&token, token->next), start);
       continue;
     }
 
     if (equal(token, "-")) {
-      node = new_node_bin(ND_SUB, node, mul(&token, token->next), start);
+      node = new_node_sub(node, mul(&token, token->next), start);
       continue;
     }
     break;

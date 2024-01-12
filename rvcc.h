@@ -74,6 +74,7 @@ typedef enum {
 
 // AST 节点
 typedef struct Node Node;
+typedef struct Type Type;
 
 // 本地变量
 typedef struct Object Object;
@@ -92,12 +93,16 @@ struct Function {
 };
 
 struct Node {
-  Token *token; // 节点对应终结符
-  NodeKind kind;
+  Token *token;  // 节点对应终结符
+  NodeKind kind; // 节点的类型
+  Type *type;    // 节点中数据的类型
+  Object *var;   // 存储 ND_VAR 的变量信息
+  int val;       // 存储 ND_NUM 的值
+
   Node *next;
+
   Node *lhs;
   Node *rhs;
-
   Node *cond; // 条件
   Node *then; // 判断成立
   Node *els;  // 判断失败
@@ -105,9 +110,6 @@ struct Node {
   Node *inc;  // 循环变量变化语句
 
   Node *body; // 代码块
-
-  Object *var; // 存储 ND_VAR 种类的变量信息
-  int val;
 };
 
 // 语法解析入口函数
@@ -119,3 +121,27 @@ Function *parse(Token *token);
 
 // 代码生成入口函数
 void codegen(Function *prog);
+
+//
+// 四、类型系统
+//
+
+// 类型
+typedef enum {
+  TY_INT, // int整形
+  TY_PTR, // 指针类型
+} TypeKind;
+
+struct Type {
+  TypeKind kind; // 类型
+  Type *base;    // 类型指针时，所指向的类型
+};
+
+// Type int
+extern Type *TYPE_INT;
+
+// 判断是否为 Type int
+bool is_integer(Type *type);
+
+// 遍历 AST 并为所有 NODE 增加类型
+void add_type(Node *node);

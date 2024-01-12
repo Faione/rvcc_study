@@ -10,6 +10,7 @@ add_executable( rvcc
   tokenize.c 
   parse.c 
   codegen.c
+  type.c
 )
 
 # 编译参数

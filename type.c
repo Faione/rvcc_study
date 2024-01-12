@@ -8,7 +8,7 @@ Type *TYPE_INT = &(Type){TY_INT};
 bool is_integer(Type *type) { return type->kind == TY_INT; }
 
 // 创建一个指针类型，并指向 base
-static Type *pointer_to(Type *base) {
+Type *pointer_to(Type *base) {
   Type *type = calloc(1, sizeof(Type));
   type->kind = TY_PTR;
   type->base = base;
@@ -48,20 +48,25 @@ void add_type(Node *node) {
   case ND_NE:
   case ND_LT:
   case ND_LE:
-  case ND_VAR:
   case ND_NUM:
     // EQ、NE、LT、LE、VAR、NUM 都设置为 TYPE_INT
     node->type = TYPE_INT;
+    return;
+  case ND_VAR:
+    // 变量节点的类型与变量节点中保存的 Object Var 的类型相同
+    node->type = node->var->type;
     return;
   case ND_ADDR:
     // 取地址节点的类型根据单臂所指向节点的类型来决定
     node->type = pointer_to(node->lhs->type);
     return;
   case ND_DEREF:
-    if (node->lhs->type->kind == TY_PTR) // 嵌套解引用
-      node->type = node->lhs->type->base;
-    else // 当前只有 INT 数据类型
-      node->type = TYPE_INT;
+    // ND_DEREF 单臂必须指向一个指针
+    if (node->lhs->type->kind != TY_PTR)
+      error_token(node->token, "invalid pointer dereference");
+
+    // ND_DEREF 的类型为指针指向的类型
+    node->type = node->lhs->type->base;
     return;
   default:
     break;

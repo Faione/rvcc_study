@@ -1,4 +1,5 @@
 #include "rvcc.h"
+#include <string.h>
 
 //
 // 二、语法分析， 生成AST
@@ -104,9 +105,10 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
 Object *LOCALS;
 
 // 创建以 Local 变量，并头插到 LOCALS 中
-static Object *new_local_var(char *name) {
+static Object *new_local_var(char *name, Type *type) {
   Object *var = calloc(1, sizeof(Object));
   var->name = name;
+  var->type = type;
 
   // 头插法
   var->next = LOCALS;
@@ -126,14 +128,25 @@ static Object *find_var_by_token(Token *token) {
   return NULL;
 }
 
+// 获取标识符字符串
+static char *get_ident(Token *token) {
+  if (token->kind != TK_IDENT)
+    error_token(token, "expected an identifier");
+  return strndup(token->loc, token->len);
+}
+
 // program = "{" compoundStmt
-// compoundStmt = stmt* "}"
+// compoundStmt = (declaration | stmt)* "}"
+// declaration =
+//         declspec (declarator ("=" expr)? ("," declarator ("=" expr)?)*)? ";"
+// declspec = "int"
+// declarator = "*"* ident
 // stmt = "return" expr ";"|
-//        "if" "(" expr ")" stmt ("else" stmt)?
-//        "for" "(" expr_stmt expr? ";" expr? ")" stmt
-//        "while" "(" expr ")" stmt
+//        "if" "(" expr ")" stmt ("else" stmt)? |
+//        "for" "(" expr_stmt expr? ";" expr? ")" stmt |
+//        "while" "(" expr ")" stmt |
 //        "{" compoundStmt |
-//        expr_stmt |
+//        expr_stmt
 // expr_stmt = expr? ";"
 // expr = assign
 // assign = equality ("=" assign)?
@@ -151,6 +164,7 @@ static Object *find_var_by_token(Token *token) {
 // 而参数 Token* 仅是值拷贝，对调用者来说不可感知
 #define PARSER_DEFINE(name) static Node *(name)(Token * *rest, Token * token)
 PARSER_DEFINE(compound_stmt);
+PARSER_DEFINE(declaration);
 PARSER_DEFINE(stmt);
 PARSER_DEFINE(expr_stmt);
 PARSER_DEFINE(expr);
@@ -169,7 +183,10 @@ PARSER_DEFINE(compound_stmt) {
   Node *node = new_node(ND_BLOCK, token);
 
   while (!equal(token, "}")) {
-    cur->next = stmt(&token, token);
+    if (equal(token, "int"))
+      cur->next = declaration(&token, token);
+    else
+      cur->next = stmt(&token, token);
     cur = cur->next;
     // 构造 stmt AST 之后，进行 add_type
     add_type(cur);
@@ -177,6 +194,72 @@ PARSER_DEFINE(compound_stmt) {
 
   node->body = head.next;
   *rest = token->next;
+  return node;
+}
+
+// declspec = "int"
+static Type *declspec(Token **rest, Token *token) {
+  *rest = skip(token, "int");
+  return TYPE_INT;
+}
+
+// declarator = "*"* ident
+// Type *type 为基础类型(int)
+static Type *declarator(Token **rest, Token *token, Type *type) {
+  // 处理多个 *
+  // var, * -> * -> * -> * -> base_type
+  while (consume(&token, token, "*")) {
+    type = pointer_to(type);
+  }
+
+  if (token->kind != TK_IDENT)
+    error_token(token, "expected a variable name");
+
+  type->token = token;
+  *rest = token->next;
+  return type;
+}
+
+// declaration =
+//         declspec (declarator ("=" expr)? ("," declarator ("=" expr)?)*)? ";"
+PARSER_DEFINE(declaration) {
+  Type *base_type = declspec(&token, token);
+
+  // 处理多个 declarator ("=" expr)?
+  Node head = {};
+  Node *cur = &head;
+
+  // 记录变量的声明次数
+  int i = 0;
+
+  while (!equal(token, ";")) {
+
+    // 除第一个以外，在开始时都要跳过 ","
+    if (i++ > 0)
+      token = skip(token, ",");
+
+    // 获取变量类型
+    Type *type = declarator(&token, token, base_type);
+    // 构造一个变量
+    Object *var = new_local_var(get_ident(type->token), type);
+
+    // 不存在赋值，则进行跳过
+    if (!equal(token, "="))
+      continue;
+
+    // 左值为变量
+    Node *lhs = new_node_var(var, type->token);
+    // 解析赋值语句
+    Node *rhs = assign(&token, token->next);
+    Node *node = new_node_bin(ND_ASSIGN, lhs, rhs, token);
+
+    cur->next = new_node_unary(ND_EXPR_STMT, node, token);
+    cur = cur->next;
+  }
+
+  Node *node = new_node(ND_BLOCK, token);
+  node->body = head.next;
+  *rest = token;
   return node;
 }
 
@@ -414,9 +497,8 @@ PARSER_DEFINE(primary) {
   // ident
   if (token->kind == TK_IDENT) {
     Object *var = find_var_by_token(token);
-    if (!var)
-      // token变量名称并不是字符串，因此在此处拷贝一份并生成字符串
-      var = new_local_var(strndup(token->loc, token->len));
+    if (!var) // 变量在声明中定义，必须存在
+      error_token(token, "undefined variable");
 
     *rest = token->next;
     return new_node_var(var, token);

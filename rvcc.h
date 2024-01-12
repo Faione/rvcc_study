@@ -41,8 +41,10 @@ void error_token(Token *token, char *fmt, ...);
 bool equal(Token *token, char *str);
 // 跳过值与 str 相同的 token
 Token *skip(Token *token, char *str);
+// 尝试跳过 str, rest保存跳过之后的 Token*, 返回值表示是否跳过成功
+bool consume(Token **rest, Token *token, char *str);
 // 终结符解析
-// head -> token1 -> token2 -> token3
+// token1 -> token2 -> token3
 Token *tokenize(char *p);
 
 //
@@ -79,9 +81,10 @@ typedef struct Type Type;
 // 本地变量
 typedef struct Object Object;
 struct Object {
-  Object *next;
-  char *name; // 变量名称
-  int offset; // 相对栈顶的偏移量
+  Object *next; // 下一个Object
+  Type *type;   // 变量类型
+  char *name;   // 变量名称
+  int offset;   // 相对栈顶的偏移量
 };
 
 // 函数
@@ -135,6 +138,8 @@ typedef enum {
 struct Type {
   TypeKind kind; // 类型
   Type *base;    // 类型指针时，所指向的类型
+
+  Token *token; // ident终结符，即变量名称
 };
 
 // Type int
@@ -142,6 +147,9 @@ extern Type *TYPE_INT;
 
 // 判断是否为 Type int
 bool is_integer(Type *type);
+
+// 创建一个指针类型，并指向 base
+Type *pointer_to(Type *base);
 
 // 遍历 AST 并为所有 NODE 增加类型
 void add_type(Node *node);

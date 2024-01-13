@@ -12,6 +12,9 @@
 // 当前预设数据长度为 64bit/8byte
 static int STACK_DEPTH;
 
+// 函数参数寄存器
+static char *func_arg_regs[] = {"a0", "a1", "a2", "a3", "a4", "a5"};
+
 static void gen_expr(Node *node);
 
 // 压栈
@@ -118,10 +121,27 @@ void gen_expr(Node *node) {
     printf("  # 将a0的值, 写入到a1中存放的地址\n");
     printf("  sd a0, 0(a1)\n");
     return;
-  case ND_FNCALL:
+  case ND_FNCALL: {
+    int argc = 0;
+
+    // 遍历所有参数，并将参数逐个压入栈中
+    for (Node *arg = node->args; arg; arg = arg->next) {
+      gen_expr(arg);
+      push();
+      argc++;
+    }
+
+    // 上述指令执行完毕时，参数必然按顺序放置在栈上
+    // 反向弹栈
+    for (int i = argc - 1; i >= 0; i--) {
+      pop(func_arg_regs[i]);
+    }
+
     printf("  # 调用函数%s\n", node->func_name);
     printf("  call %s\n", node->func_name);
+
     return;
+  }
   default:
     break;
   }

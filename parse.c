@@ -155,8 +155,8 @@ static char *get_ident(Token *token) {
 // add = mul ("+" mul | "-" mul)*
 // mul = unary ("*" unary | "/" unary)*
 // unary = ("+" | "-" | "*" | "&") unary | primary
-// primary = "(" expr ")" | ident args?｜ num
-// args = "(" ")"
+// primary = "(" expr ")" | ident | fncall | num
+// fncall = ident "(" (assign ("," assign)*)? ")"
 
 // 传入 Token** 与 Token*，
 // 前者作为结果，让调用者能够感知，后者则作为递归中传递的变量
@@ -230,9 +230,7 @@ PARSER_DEFINE(declaration) {
   Node head = {};
   Node *cur = &head;
 
-  // 记录变量的声明次数
   int i = 0;
-
   while (!equal(token, ";")) {
 
     // 除第一个以外，在开始时都要跳过 ","
@@ -244,7 +242,7 @@ PARSER_DEFINE(declaration) {
     // 构造一个变量
     Object *var = new_local_var(get_ident(type->token), type);
 
-    // 不存在赋值，则进行跳过
+    // 不存在赋值，则进行跳过(这种情况下cur不会进行更新，因此不能通过cur判断是否要跳过`,`)
     if (!equal(token, "="))
       continue;
 
@@ -486,8 +484,33 @@ PARSER_DEFINE(unary) {
   return primary(rest, token);
 }
 
-// primary = "(" expr ")" | ident args?｜ num
-// args = "(" ")"
+// fncall = ident "(" (assign ("," assign)*)? ")"
+PARSER_DEFINE(fncall) {
+  Token *start = token;
+  token = token->next->next;
+
+  Node head = {};
+  Node *cur = &head;
+
+  // 构造参数
+  while (!equal(token, ")")) {
+    if (cur != &head)
+      token = skip(token, ",");
+
+    cur->next = assign(&token, token);
+    cur = cur->next;
+  }
+
+  Node *node = new_node(ND_FNCALL, start);
+  node->args = head.next;
+  node->func_name = strndup(start->loc, start->len);
+
+  // 跳过 ")"
+  *rest = skip(token, ")");
+  return node;
+}
+
+// primary = "(" expr ")" | ident | fncall | num
 PARSER_DEFINE(primary) {
   // "(" expr ")"
   if (equal(token, "(")) {
@@ -498,12 +521,9 @@ PARSER_DEFINE(primary) {
 
   // ident
   if (token->kind == TK_IDENT) {
-    // ident args?
+    // fncall
     if (equal(token->next, "(")) {
-      Node *node = new_node(ND_FNCALL, token);
-      node->func_name = strndup(token->loc, token->len);
-      *rest = skip(token->next->next, ")");
-      return node;
+      return fncall(rest, token);
     }
 
     // ident var

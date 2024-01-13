@@ -97,12 +97,14 @@ struct Function {
 };
 
 struct Node {
-  Token *token;    // 节点对应终结符
-  NodeKind kind;   // 节点的类型
-  Type *type;      // 节点中数据的类型
-  Object *var;     // 存储 ND_VAR 的变量信息
-  int val;         // 存储 ND_NUM 的值
+  Token *token;  // 节点对应终结符
+  NodeKind kind; // 节点的类型
+  Type *type;    // 节点中数据的类型
+  Object *var;   // 存储 ND_VAR 的变量信息
+  int val;       // 存储 ND_NUM 的值
+
   char *func_name; // 函数名称
+  Node *args;      // 函数参数
 
   Node *next;
 

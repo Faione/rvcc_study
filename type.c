@@ -49,7 +49,8 @@ void add_type(Node *node) {
   case ND_LT:
   case ND_LE:
   case ND_NUM:
-    // EQ、NE、LT、LE、VAR、NUM 都设置为 TYPE_INT
+  case ND_FNCALL:
+    // EQ、NE、LT、LE、VAR、NUM、FNCALL都设置为 TYPE_INT
     node->type = TYPE_INT;
     return;
   case ND_VAR:

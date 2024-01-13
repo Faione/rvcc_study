@@ -155,7 +155,8 @@ static char *get_ident(Token *token) {
 // add = mul ("+" mul | "-" mul)*
 // mul = unary ("*" unary | "/" unary)*
 // unary = ("+" | "-" | "*" | "&") unary | primary
-// primary = "(" expr ")" | ident｜ num
+// primary = "(" expr ")" | ident args?｜ num
+// args = "(" ")"
 
 // 传入 Token** 与 Token*，
 // 前者作为结果，让调用者能够感知，后者则作为递归中传递的变量
@@ -485,7 +486,8 @@ PARSER_DEFINE(unary) {
   return primary(rest, token);
 }
 
-// primary = "(" expr ")" | ident｜ num
+// primary = "(" expr ")" | ident args?｜ num
+// args = "(" ")"
 PARSER_DEFINE(primary) {
   // "(" expr ")"
   if (equal(token, "(")) {
@@ -496,6 +498,15 @@ PARSER_DEFINE(primary) {
 
   // ident
   if (token->kind == TK_IDENT) {
+    // ident args?
+    if (equal(token->next, "(")) {
+      Node *node = new_node(ND_FNCALL, token);
+      node->func_name = strndup(token->loc, token->len);
+      *rest = skip(token->next->next, ")");
+      return node;
+    }
+
+    // ident var
     Object *var = find_var_by_token(token);
     if (!var) // 变量在声明中定义，必须存在
       error_token(token, "undefined variable");

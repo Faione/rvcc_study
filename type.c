@@ -12,6 +12,16 @@ Type *pointer_to(Type *base) {
   Type *type = calloc(1, sizeof(Type));
   type->kind = TY_PTR;
   type->base = base;
+
+  return type;
+}
+
+// 创建一个函数类型， 且返回值为ret_type
+Type *func_type(Type *ret_type) {
+  Type *type = calloc(1, sizeof(Type));
+  type->kind = TY_FUNC;
+  type->ret_type = ret_type;
+
   return type;
 }
 

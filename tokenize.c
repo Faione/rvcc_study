@@ -142,7 +142,7 @@ static bool is_keyword(Token *token) {
 // 将符合关键字的 token 类型修改为 TK_KEYWORD
 static void convert_keywords(Token *token) {
   for (Token *t = token; t; t = t->next) {
-    if (is_keyword(token)) {
+    if (is_keyword(t)) {
       t->kind = TK_KEYWORD;
     }
   }

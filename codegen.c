@@ -6,16 +6,23 @@
 // 三、语义分析,生成代码
 //
 
+static void gen_expr(Node *node);
+
+// (1) 函数
+
+// 参数寄存器
+static char *func_arg_regs[] = {"a0", "a1", "a2", "a3", "a4", "a5"};
+// 当前函数
+static Function *CUR_FUNC;
+
+// (2) 栈
 // 生成的代码中,利用栈保存中间数据
 // 表达式中使用 a0, a1 两个寄存器保存算式中的数字
 // 多次运算的结果通过栈来进行保存
 // 当前预设数据长度为 64bit/8byte
+
+// 当前分析代码的栈深度
 static int STACK_DEPTH;
-
-// 函数参数寄存器
-static char *func_arg_regs[] = {"a0", "a1", "a2", "a3", "a4", "a5"};
-
-static void gen_expr(Node *node);
 
 // 压栈
 // 将 a0 寄存器中的值压入栈中
@@ -47,16 +54,20 @@ static int align_to(int n, int align) {
   return (n + align - 1) / align * align;
 }
 
-// 计算每个 local var 相对于栈顶的便宜
-// 计算栈的长度,并对齐到 16
+// 为链表中每个 Function 计算本地变量偏移及栈大小
 static void assign_local_val_offsets(Function *prog) {
-  int offset = 0;
-  for (Object *var = prog->locals; var; var = var->next) {
-    offset += 8;
-    var->offset = -offset;
-  }
 
-  prog->stack_size = align_to(offset, 16);
+  for (Function *f = prog; f; f = f->next) {
+    int offset = 0;
+    // 计算每个 local var 相对于栈顶的便宜
+    for (Object *var = f->locals; var; var = var->next) {
+      offset += 8;
+      var->offset = -offset;
+    }
+
+    // 计算栈的长度,并对齐到 16
+    f->stack_size = align_to(offset, 16);
+  }
 }
 
 // 计算给定节点的内存地址
@@ -211,8 +222,8 @@ static void gen_stmt(Node *node) {
   case ND_RETURN:
     printf("# 返回语句\n");
     gen_expr(node->lhs);
-    printf("  # 跳转到.L.return段\n");
-    printf("  j .L.return\n");
+    printf("  # 跳转到.L.return.%s段\n", CUR_FUNC->name);
+    printf("  j .L.return.%s\n", CUR_FUNC->name);
     return;
   case ND_BLOCK:
     for (Node *n = node->body; n; n = n->next) {
@@ -286,51 +297,59 @@ static void gen_stmt(Node *node) {
 
 void codegen(Function *prog) {
   assign_local_val_offsets(prog);
-  printf("  # 定义全局main段\n");
-  printf("  .globl main\n");
-  printf("\n# =====程序开始===============\n");
-  printf("# main段标签,也是程序入口段\n");
-  printf("main:\n");
 
-  // 栈布局
-  //-------------------------------// sp
-  //              ra
-  //-------------------------------// ra = sp-8
-  //              fp
-  //-------------------------------// fp = sp-16
-  //             变量
-  //-------------------------------// sp = sp-16-StackSize
-  //           表达式计算
-  //-------------------------------//
-  printf("  addi sp, sp, -16\n");
-  printf("  # 将ra压栈\n");
-  printf("  sd ra, 8(sp)\n");
+  // 为每个函数单独生成代码
+  for (Function *f = prog; f; f = f->next) {
+    printf("  # 定义全局%s段\n", f->name);
+    printf("  .globl %s\n", f->name);
+    printf("\n# =====%s段开始===============\n", f->name);
+    printf("# %s段标签\n", f->name);
+    printf("%s:\n", f->name);
+    CUR_FUNC = f;
 
-  printf("  # 将fp压栈,fp属于“被调用者保存”的寄存器,需要恢复原值\n");
-  printf("  sd fp, 0(sp)\n");
+    // 栈布局
+    //-------------------------------// sp
+    //              ra
+    //-------------------------------// ra = sp-8
+    //              fp
+    //-------------------------------// fp = sp-16
+    //             变量
+    //-------------------------------// sp = sp-16-StackSize
+    //           表达式计算
+    //-------------------------------//
 
-  printf("  # 将sp的值写入fp\n");
-  printf("  mv fp, sp\n");
+    // Prologue
+    printf("  addi sp, sp, -16\n");
+    printf("  # 将ra压栈\n");
+    printf("  sd ra, 8(sp)\n");
 
-  printf("  # sp腾出StackSize大小的栈空间\n");
-  printf("  addi sp, sp, -%d\n", prog->stack_size);
+    printf("  # 将fp压栈,fp属于“被调用者保存”的寄存器,需要恢复原值\n");
+    printf("  sd fp, 0(sp)\n");
 
-  printf("\n# =====程序主体===============\n");
-  gen_stmt(prog->body);
-  assert(STACK_DEPTH == 0);
+    printf("  # 将sp的值写入fp\n");
+    printf("  mv fp, sp\n");
 
-  printf("\n# =====程序结束===============\n");
-  printf("# return段标签\n");
-  printf(".L.return:\n");
+    printf("  # sp腾出StackSize大小的栈空间\n");
+    printf("  addi sp, sp, -%d\n", f->stack_size);
 
-  printf("  # 将fp的值写回sp\n");
-  printf("  mv sp, fp\n");
+    printf("\n# =====%s段主体===============\n", f->name);
+    gen_stmt(f->body);
+    assert(STACK_DEPTH == 0);
 
-  printf("  # 恢复fp、ra和sp\n");
-  printf("  ld fp, 0(sp)\n");
-  printf("  ld ra, 8(sp)\n");
-  printf("  addi sp, sp, 16\n");
+    // Epilogue
+    printf("\n# =====%s段结束===============\n", f->name);
+    printf("# %s return段标签\n", f->name);
+    printf(".L.return.%s:\n", f->name);
 
-  printf("  # 返回a0值给系统调用\n");
-  printf("  ret\n");
+    printf("  # 将fp的值写回sp\n");
+    printf("  mv sp, fp\n");
+
+    printf("  # 恢复fp、ra和sp\n");
+    printf("  ld fp, 0(sp)\n");
+    printf("  ld ra, 8(sp)\n");
+    printf("  addi sp, sp, 16\n");
+
+    printf("  # 返回a0值给系统调用\n");
+    printf("  ret\n");
+  }
 }

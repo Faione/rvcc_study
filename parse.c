@@ -1,4 +1,5 @@
 #include "rvcc.h"
+#include <stdlib.h>
 #include <string.h>
 
 //
@@ -135,12 +136,14 @@ static char *get_ident(Token *token) {
   return strndup(token->loc, token->len);
 }
 
-// program = "{" compoundStmt
-// compoundStmt = (declaration | stmt)* "}"
+// program = function*
+// function = declspec declarator "{" compoundStmt*
+// declspec = "int"
+// declarator = "*"* ident type_suf
+// type_suf = ("(" ")")?
+// compound_stmt = (declaration | stmt)* "}"
 // declaration =
 //         declspec (declarator ("=" expr)? ("," declarator ("=" expr)?)*)? ";"
-// declspec = "int"
-// declarator = "*"* ident
 // stmt = "return" expr ";"|
 //        "if" "(" expr ")" stmt ("else" stmt)? |
 //        "for" "(" expr_stmt expr? ";" expr? ")" stmt |
@@ -164,8 +167,8 @@ static char *get_ident(Token *token) {
 // *rest 都必须指向待分析的下一个 token
 // 而参数 Token* 仅是值拷贝，对调用者来说不可感知
 #define PARSER_DEFINE(name) static Node *(name)(Token * *rest, Token * token)
-PARSER_DEFINE(compound_stmt);
 PARSER_DEFINE(declaration);
+PARSER_DEFINE(compound_stmt);
 PARSER_DEFINE(stmt);
 PARSER_DEFINE(expr_stmt);
 PARSER_DEFINE(expr);
@@ -176,6 +179,46 @@ PARSER_DEFINE(add);
 PARSER_DEFINE(mul);
 PARSER_DEFINE(unary);
 PARSER_DEFINE(primary);
+
+// type_suf = ("(" ")")?
+// Type *type 为基础类型(如 int)
+static Type *type_suf(Token **rest, Token *token, Type *type) {
+  if (equal(token, "(")) { // 零参函数
+    *rest = skip(token->next, ")");
+    return func_type(type);
+  }
+
+  *rest = token;
+  return type;
+}
+
+// declspec = "int"
+static Type *declspec(Token **rest, Token *token) {
+  *rest = skip(token, "int");
+  return TYPE_INT;
+}
+
+// declarator = "*"* ident type_suf
+// Type *type 为基础类型(如 int)
+static Type *declarator(Token **rest, Token *token, Type *type) {
+  // 处理多个 *
+  // var, * -> * -> * -> * -> base_type
+  while (consume(&token, token, "*")) {
+    type = pointer_to(type);
+  }
+
+  if (token->kind != TK_IDENT)
+    error_token(token, "expected a variable name");
+
+  // 若是变量，则保有传入的 type
+  // 若是函数，则type会变为 FUNC， 并指向传入的类型
+  type = type_suf(rest, token->next, type);
+
+  // 将 TK_IDENT token 保存到 type 中
+  type->token = token;
+
+  return type;
+}
 
 // compoundStmt = stmt* "}"
 PARSER_DEFINE(compound_stmt) {
@@ -196,29 +239,6 @@ PARSER_DEFINE(compound_stmt) {
   node->body = head.next;
   *rest = token->next;
   return node;
-}
-
-// declspec = "int"
-static Type *declspec(Token **rest, Token *token) {
-  *rest = skip(token, "int");
-  return TYPE_INT;
-}
-
-// declarator = "*"* ident
-// Type *type 为基础类型(int)
-static Type *declarator(Token **rest, Token *token, Type *type) {
-  // 处理多个 *
-  // var, * -> * -> * -> * -> base_type
-  while (consume(&token, token, "*")) {
-    type = pointer_to(type);
-  }
-
-  if (token->kind != TK_IDENT)
-    error_token(token, "expected a variable name");
-
-  type->token = token;
-  *rest = token->next;
-  return type;
 }
 
 // declaration =
@@ -546,13 +566,38 @@ PARSER_DEFINE(primary) {
   return NULL;
 }
 
+// function = declspec declarator "{" compoundStmt*
+static Function *function(Token **rest, Token *token) {
+  // 返回值的基础类型
+  Type *type = declspec(&token, token);
+
+  // type为函数类型
+  // 指向 return type, 同时判断指针
+  // type->token 指向了 ident 对应的 token
+  type = declarator(&token, token, type);
+
+  // 清空局部变量
+  LOCALS = NULL;
+
+  Function *func = calloc(1, sizeof(Function));
+  func->name = get_ident(type->token);
+
+  token = skip(token, "{");
+  func->body = compound_stmt(rest, token);
+  func->locals = LOCALS;
+  return func;
+}
+
+// program = function*
 Function *parse(Token *token) {
 
-  // 代码块必须以 { 开头
-  token = skip(token, "{");
+  Function head = {};
+  Function *cur = &head;
 
-  Function *prog = calloc(1, sizeof(Function));
-  prog->body = compound_stmt(&token, token);
-  prog->locals = LOCALS;
-  return prog;
+  while (token->kind != TK_EOF) {
+    cur->next = function(&token, token);
+    cur = cur->next;
+  }
+
+  return head.next;
 }

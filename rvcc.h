@@ -83,16 +83,19 @@ typedef struct Type Type;
 typedef struct Object Object;
 struct Object {
   Object *next; // 下一个Object
-  Type *type;   // 变量类型
   char *name;   // 变量名称
-  int offset;   // 相对栈顶的偏移量
+  Type *type;   // 变量类型
+
+  int offset; // 相对栈顶的偏移量
 };
 
 // 函数
 typedef struct Function Function;
 struct Function {
+  Function *next; // 下一个函数
+  char *name;     // 函数名称
   Node *body;     // 函数体(AST)
-  Object *locals; // 本地变量链表头
+  Object *locals; // 本地变量
   int stack_size; // 栈大小
 };
 
@@ -135,15 +138,16 @@ void codegen(Function *prog);
 
 // 类型
 typedef enum {
-  TY_INT, // int整形
-  TY_PTR, // 指针类型
+  TY_INT,  // int整形
+  TY_PTR,  // 指针类型
+  TY_FUNC, // 函数类型
 } TypeKind;
 
 struct Type {
-  TypeKind kind; // 类型
-  Type *base;    // 类型指针时，所指向的类型
-
-  Token *token; // ident终结符，即变量名称
+  TypeKind kind;  // 类型
+  Token *token;   // ident终结符，即变量名称
+  Type *base;     // 为指针时，所指向的类型
+  Type *ret_type; // 为函数时，返回值的类型
 };
 
 // Type int
@@ -154,6 +158,9 @@ bool is_integer(Type *type);
 
 // 创建一个指针类型，并指向 base
 Type *pointer_to(Type *base);
+
+// 创建一个函数类型， 且返回值为ret_type
+Type *func_type(Type *ret_type);
 
 // 遍历 AST 并为所有 NODE 增加类型
 void add_type(Node *node);

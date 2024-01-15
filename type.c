@@ -7,6 +7,15 @@ Type *TYPE_INT = &(Type){TY_INT};
 // 判断是否为 Type int
 bool is_integer(Type *type) { return type->kind == TY_INT; }
 
+// 复制类型
+// 浅拷贝，仅复制栈上数据
+Type *copy_type(Type *type) {
+  Type *rlt = calloc(1, sizeof(Type));
+  *rlt = *type;
+
+  return rlt;
+}
+
 // 创建一个指针类型，并指向 base
 Type *pointer_to(Type *base) {
   Type *type = calloc(1, sizeof(Type));
@@ -42,6 +51,10 @@ void add_type(Node *node) {
 
   // 遍历 stmt 链表
   for (Node *n = node->body; n; n = n->next)
+    add_type(n);
+
+  // 访问所有参数以增加类型
+  for (Node *n = node->args; n; n = n->next)
     add_type(n);
 
   switch (node->kind) {

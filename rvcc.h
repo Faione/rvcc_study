@@ -94,7 +94,10 @@ typedef struct Function Function;
 struct Function {
   Function *next; // 下一个函数
   char *name;     // 函数名称
-  Node *body;     // 函数体(AST)
+  Object *params; // 形参
+
+  Node *body; // 函数体(AST)
+
   Object *locals; // 本地变量
   int stack_size; // 栈大小
 };
@@ -144,10 +147,13 @@ typedef enum {
 } TypeKind;
 
 struct Type {
-  TypeKind kind;  // 类型
-  Token *token;   // ident终结符，即变量名称
-  Type *base;     // 为指针时，所指向的类型
+  TypeKind kind; // 类型
+  Type *next;    //下一个类型
+  Token *token;  // ident终结符，即变量名称
+  Type *base;    // 为指针时，所指向的类型
+
   Type *ret_type; // 为函数时，返回值的类型
+  Type *params;   // 形参
 };
 
 // Type int
@@ -155,6 +161,9 @@ extern Type *TYPE_INT;
 
 // 判断是否为 Type int
 bool is_integer(Type *type);
+
+// 复制类型
+Type *copy_type(Type *type);
 
 // 创建一个指针类型，并指向 base
 Type *pointer_to(Type *base);

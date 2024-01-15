@@ -105,18 +105,6 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
 // 变量实例均保存在全局的 LOCALS 链表中
 Object *LOCALS;
 
-// 创建以 Local 变量，并头插到 LOCALS 中
-static Object *new_local_var(char *name, Type *type) {
-  Object *var = calloc(1, sizeof(Object));
-  var->name = name;
-  var->type = type;
-
-  // 头插法
-  var->next = LOCALS;
-  LOCALS = var;
-  return var;
-}
-
 // 寻找 LOCALS 中是否有与 ident token 同名的变量
 static Object *find_var_by_token(Token *token) {
   for (Object *var = LOCALS; var; var = var->next) {
@@ -136,11 +124,35 @@ static char *get_ident(Token *token) {
   return strndup(token->loc, token->len);
 }
 
+// 创建以 Local 变量，并头插到 LOCALS 中
+// 头插保证了每次 LOCALS 更新后，LOCALS 链表头都会变
+static Object *new_local_var(char *name, Type *type) {
+  Object *var = calloc(1, sizeof(Object));
+  var->name = name;
+  var->type = type;
+
+  // 头插法
+  var->next = LOCALS;
+  LOCALS = var;
+  return var;
+}
+
+// 递归地将函数形参加入到 Local 中
+static void insert_param_to_locals(Type *param) {
+  if (param) {
+    insert_param_to_locals(param->next);
+    new_local_var(get_ident(param->token), param);
+  }
+}
+
 // program = function*
-// function = declspec declarator "{" compoundStmt*
+// function = declspec declarator "{" compound_stmt*
 // declspec = "int"
 // declarator = "*"* ident type_suf
-// type_suf = ("(" ")")?
+// type_suf = ("(" func_params? ")")?
+// func_params = param ("," param)*
+// param = declspec declarator
+
 // compound_stmt = (declaration | stmt)* "}"
 // declaration =
 //         declspec (declarator ("=" expr)? ("," declarator ("=" expr)?)*)? ";"
@@ -180,12 +192,43 @@ PARSER_DEFINE(mul);
 PARSER_DEFINE(unary);
 PARSER_DEFINE(primary);
 
-// type_suf = ("(" ")")?
+static Type *declspec(Token **rest, Token *token);
+static Type *declarator(Token **rest, Token *token, Type *type);
+
+// type_suf = ("(" func_params? ")")?
+// func_params = param ("," param)*
+// param = declspec declarator
 // Type *type 为基础类型(如 int)
 static Type *type_suf(Token **rest, Token *token, Type *type) {
-  if (equal(token, "(")) { // 零参函数
-    *rest = skip(token->next, ")");
-    return func_type(type);
+  if (equal(token, "(")) { // 函数
+    token = token->next;
+
+    // 存储形参
+    Type head = {};
+    Type *cur = &head;
+
+    while (!equal(token, ")")) {
+      if (cur != &head)
+        token = skip(token, ",");
+
+      Type *base_type = declspec(&token, token);
+      // 不可将 declspec 嵌套的原因是
+      // declarator 的前几个参数会先准备好，然后再调用 declspec
+      // 而因此导致的 token 变化无法被 declarator 感知
+      // 因此不能将 declspec 进行嵌套
+      Type *dec_type = declarator(&token, token, base_type);
+
+      // dec_type 为局部变量，地址不会改变，因此每次都需要拷贝，否则链表就会成环
+      cur->next = copy_type(dec_type);
+      cur = cur->next;
+    }
+
+    // 将参数加入到函数 Type 中
+    type = func_type(type);
+    type->params = head.next;
+
+    *rest = token->next;
+    return type;
   }
 
   *rest = token;
@@ -581,6 +624,9 @@ static Function *function(Token **rest, Token *token) {
 
   Function *func = calloc(1, sizeof(Function));
   func->name = get_ident(type->token);
+  // 函数参数
+  insert_param_to_locals(type->params);
+  func->params = LOCALS;
 
   token = skip(token, "{");
   func->body = compound_stmt(rest, token);

@@ -161,7 +161,7 @@ static void insert_param_to_locals(Type *param) {
 // function = declspec declarator "{" compound_stmt*
 // declspec = "int"
 // declarator = "*"* ident type_suf
-// type_suf = "(" func_params | "[" num "]" | ε
+// type_suf = "(" func_params | "[" num "]" type_suf | ε
 // func_params = param ("," param)*)? ")"
 // param = declspec declarator
 
@@ -251,7 +251,7 @@ static Type *func_params(Token **rest, Token *token, Type *type) {
 /**
  * type_suf(Token **rest, Token *token, Type *type)
  *
- * type_suf = "(" func_params | "[" num "]" | ε
+ * type_suf = "(" func_params | "[" num "]" type_suf | ε
  *
  * @param rest 指向剩余token指针的指针
  * @param token 正在处理的 token
@@ -265,7 +265,8 @@ static Type *type_suf(Token **rest, Token *token, Type *type) {
 
   if (equal(token, "[")) {
     int len = get_num(token->next);
-    *rest = skip(token->next->next, "]");
+    token = skip(token->next->next, "]");
+    type = type_suf(rest, token, type);
     return array_type(type, len);
   }
 

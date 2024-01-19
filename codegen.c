@@ -59,9 +59,9 @@ static void assign_local_val_offsets(Function *prog) {
 
   for (Function *f = prog; f; f = f->next) {
     int offset = 0;
-    // 计算每个 local var 相对于栈顶的便宜
+    // 计算每个 local var 相对于栈顶的偏移
     for (Object *var = f->locals; var; var = var->next) {
-      offset += 8;
+      offset += var->type->size;
       var->offset = -offset;
     }
 
@@ -71,6 +71,7 @@ static void assign_local_val_offsets(Function *prog) {
 }
 
 // 计算给定节点的内存地址
+// 将地址保存在 a0 寄存器中
 static void gen_addr(Node *node) {
 
   switch (node->kind) {
@@ -87,6 +88,24 @@ static void gen_addr(Node *node) {
   }
 
   error_token(node->token, "not an lvalue");
+}
+
+// a0 中保存了一个地址
+// 将此地址的值加载到 a0 中
+static void load(Type *type) {
+  if (type->kind == TY_ARRAY)
+    return;
+  printf("  # 读取a0中存放的地址, 得到的值存入a0\n");
+  printf("  ld a0, 0(a0)\n");
+}
+
+// 栈保存了一个地址
+// 将此地址 pop 到 a1 中
+// 将 a0 中的值保存到此地址
+static void store(void) {
+  pop("a1");
+  printf("  # 将a0的值, 写入到 a1 中存放的地址\n");
+  printf("  sd a0, 0(a1)\n");
 }
 
 // 词法分析
@@ -112,14 +131,11 @@ void gen_expr(Node *node) {
   case ND_DEREF:
     // 解引用向右递归
     gen_expr(node->lhs);
-    printf("  # 读取 a0 中间接引用的值，存入到 a0中\n");
-    printf("  ld a0, 0(a0)\n");
+    load(node->type);
     return;
   case ND_VAR:
     gen_addr(node);
-    // 将变量代表的内存地址中的值读入到 a0 中
-    printf("  # 读取a0中存放的地址, 得到的值存入a0\n");
-    printf("  ld a0, 0(a0)\n");
+    load(node->type);
     return;
   case ND_ASSIGN:
     // 左值
@@ -127,10 +143,7 @@ void gen_expr(Node *node) {
     push();
     // 右值
     gen_expr(node->rhs);
-    // 栈上保存的是左值内存地址, 弹出到 a1 寄存器
-    pop("a1");
-    printf("  # 将a0的值, 写入到a1中存放的地址\n");
-    printf("  sd a0, 0(a1)\n");
+    store();
     return;
   case ND_FNCALL: {
     int argc = 0;

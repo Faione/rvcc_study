@@ -141,17 +141,20 @@ void codegen(Function *prog);
 
 // 类型
 typedef enum {
-  TY_INT,  // int整形
-  TY_PTR,  // 指针类型
-  TY_FUNC, // 函数类型
+  TY_INT,   // int整形
+  TY_PTR,   // 指针类型
+  TY_FUNC,  // 函数类型
+  TY_ARRAY, //数组
 } TypeKind;
 
 struct Type {
   TypeKind kind; // 类型
+  int size;      // 大小
   Type *next;    //下一个类型
-  Token *token;  // ident终结符，即变量名称
-  Type *base;    // 为指针时，所指向的类型
 
+  int len;        // 为数组时，数组的长度
+  Token *token;   // 为变量时，变量token
+  Type *base;     // 为指针时，所指向的类型
   Type *ret_type; // 为函数时，返回值的类型
   Type *params;   // 形参
 };
@@ -166,10 +169,13 @@ bool is_integer(Type *type);
 Type *copy_type(Type *type);
 
 // 创建一个指针类型，并指向 base
-Type *pointer_to(Type *base);
+Type *pointer_type(Type *base);
 
 // 创建一个函数类型， 且返回值为ret_type
 Type *func_type(Type *ret_type);
+
+// 创建一个数组类型, 基类为 base， 长度为 len
+Type *array_type(Type *base, int len);
 
 // 遍历 AST 并为所有 NODE 增加类型
 void add_type(Node *node);

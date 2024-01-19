@@ -42,7 +42,7 @@ static Node *new_node_var(Object *var, Token *token) {
 
 // 创建ADD节点
 // num | ptr + num | ptr
-// 未声明 Type，上层会使类型与 lhs 相同
+// 未声明 Type，因为调用者会使类型与 lhs 相同
 static Node *new_node_add(Node *lhs, Node *rhs, Token *token) {
   add_type(lhs);
   add_type(rhs);
@@ -65,14 +65,16 @@ static Node *new_node_add(Node *lhs, Node *rhs, Token *token) {
     rhs = temp;
   }
 
-  // 将 ptr + num 转化为 ptr + (num * 8) 从而计算地址
-  rhs = new_node_bin(ND_MUL, rhs, new_node_num(8, token), token);
+  // 将 ptr + num 转化为 ptr + (num * size) 从而计算地址
+  // size 为 ptr 所对应 base 的 size
+  rhs = new_node_bin(ND_MUL, rhs, new_node_num(lhs->type->base->size, token),
+                     token);
   return new_node_bin(ND_ADD, lhs, rhs, token);
 }
 
 // 创建SUB节点
 // num | ptr - num | ptr
-// 未声明 Type，上层会使类型与 lhs 相同
+// 未声明 Type，因为调用者会使类型与 lhs 相同
 static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
   add_type(lhs);
   add_type(rhs);
@@ -84,7 +86,8 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
 
   // ptr - num
   if (lhs->type->base && is_integer(rhs->type)) {
-    rhs = new_node_bin(ND_MUL, rhs, new_node_num(8, token), token);
+    rhs = new_node_bin(ND_MUL, rhs, new_node_num(lhs->type->base->size, token),
+                       token);
     return new_node_bin(ND_SUB, lhs, rhs, token);
   }
 
@@ -94,7 +97,8 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
     Node *node = new_node_bin(ND_SUB, lhs, rhs, token);
     // 注意 ptr - ptr 的类型应当为 INT, 这样才有意义
     node->type = TYPE_INT;
-    return new_node_bin(ND_DIV, node, new_node_num(8, token), token);
+    return new_node_bin(ND_DIV, node,
+                        new_node_num(lhs->type->base->size, token), token);
   }
 
   // num - ptr
@@ -124,6 +128,14 @@ static char *get_ident(Token *token) {
   return strndup(token->loc, token->len);
 }
 
+// 获取数字
+static int get_num(Token *token) {
+  if (token->kind != TK_NUM)
+    error_token(token, "expected a number");
+
+  return token->val;
+}
+
 // 创建以 Local 变量，并头插到 LOCALS 中
 // 头插保证了每次 LOCALS 更新后，LOCALS 链表头都会变
 static Object *new_local_var(char *name, Type *type) {
@@ -149,8 +161,8 @@ static void insert_param_to_locals(Type *param) {
 // function = declspec declarator "{" compound_stmt*
 // declspec = "int"
 // declarator = "*"* ident type_suf
-// type_suf = ("(" func_params? ")")?
-// func_params = param ("," param)*
+// type_suf = "(" func_params | "[" num "]" | ε
+// func_params = param ("," param)*)? ")"
 // param = declspec declarator
 
 // compound_stmt = (declaration | stmt)* "}"
@@ -195,40 +207,66 @@ PARSER_DEFINE(primary);
 static Type *declspec(Token **rest, Token *token);
 static Type *declarator(Token **rest, Token *token, Type *type);
 
-// type_suf = ("(" func_params? ")")?
-// func_params = param ("," param)*
-// param = declspec declarator
-// Type *type 为基础类型(如 int)
+/**
+ * func_params(Token **rest, Token *token, Type *type)
+ *
+ * func_params = param ("," param)*)? ")"
+ * param = declspec declarator
+ *
+ * @param rest 指向剩余token指针的指针
+ * @param token 正在处理的 token
+ * @param type 函数返回参数类型
+ *
+ * @return 构造好的函数的 Type
+ */
+static Type *func_params(Token **rest, Token *token, Type *type) {
+  // 存储形参
+  Type head = {};
+  Type *cur = &head;
+
+  while (!equal(token, ")")) {
+    if (cur != &head)
+      token = skip(token, ",");
+
+    Type *base_type = declspec(&token, token);
+    // 不可将 declspec 嵌套的原因是
+    // declarator 的前几个参数会先准备好，然后再调用 declspec
+    // 而因此导致的 token 变化无法被 declarator 感知
+    // 因此不能将 declspec 进行嵌套
+    Type *dec_type = declarator(&token, token, base_type);
+
+    // dec_type 为局部变量，地址不会改变，因此每次都需要拷贝，否则链表就会成环
+    cur->next = copy_type(dec_type);
+    cur = cur->next;
+  }
+
+  // 将参数加入到函数 Type 中
+  type = func_type(type);
+  type->params = head.next;
+
+  *rest = token->next;
+  return type;
+}
+
+/**
+ * type_suf(Token **rest, Token *token, Type *type)
+ *
+ * type_suf = "(" func_params | "[" num "]" | ε
+ *
+ * @param rest 指向剩余token指针的指针
+ * @param token 正在处理的 token
+ * @param type type_suf 之前所识别出来的类型 indent
+ *
+ * @return 构造好的 Type
+ */
 static Type *type_suf(Token **rest, Token *token, Type *type) {
-  if (equal(token, "(")) { // 函数
-    token = token->next;
+  if (equal(token, "(")) // 函数
+    return func_params(rest, token->next, type);
 
-    // 存储形参
-    Type head = {};
-    Type *cur = &head;
-
-    while (!equal(token, ")")) {
-      if (cur != &head)
-        token = skip(token, ",");
-
-      Type *base_type = declspec(&token, token);
-      // 不可将 declspec 嵌套的原因是
-      // declarator 的前几个参数会先准备好，然后再调用 declspec
-      // 而因此导致的 token 变化无法被 declarator 感知
-      // 因此不能将 declspec 进行嵌套
-      Type *dec_type = declarator(&token, token, base_type);
-
-      // dec_type 为局部变量，地址不会改变，因此每次都需要拷贝，否则链表就会成环
-      cur->next = copy_type(dec_type);
-      cur = cur->next;
-    }
-
-    // 将参数加入到函数 Type 中
-    type = func_type(type);
-    type->params = head.next;
-
-    *rest = token->next;
-    return type;
+  if (equal(token, "[")) {
+    int len = get_num(token->next);
+    *rest = skip(token->next->next, "]");
+    return array_type(type, len);
   }
 
   *rest = token;
@@ -247,7 +285,7 @@ static Type *declarator(Token **rest, Token *token, Type *type) {
   // 处理多个 *
   // var, * -> * -> * -> * -> base_type
   while (consume(&token, token, "*")) {
-    type = pointer_to(type);
+    type = pointer_type(type);
   }
 
   if (token->kind != TK_IDENT)

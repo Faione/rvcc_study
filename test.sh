@@ -27,8 +27,8 @@ assert() {
   $RISCV/bin/riscv64-unknown-linux-gnu-gcc -static -o tmp tmp.s tmp2.o
 
   # 运行生成出来目标文件
-  ./tmp
-  # $RISCV/bin/qemu-riscv64 -L $RISCV/sysroot ./tmp
+  # ./tmp
+  $RISCV/bin/qemu-riscv64 -L $RISCV/sysroot ./tmp
   # $RISCV/bin/spike --isa=rv64gc $RISCV/riscv64-unknown-linux-gnu/bin/pk ./tmp
 
   # 获取程序返回值，存入 实际值
@@ -160,6 +160,12 @@ assert 32 'int main() { return ret32(); } int ret32() { return 32; }'
 assert 7 'int main() { return add2(3,4); } int add2(int x, int y) { return x+y; }'
 assert 1 'int main() { return sub2(4,3); } int sub2(int x, int y) { return x-y; }'
 assert 55 'int main() { return fib(9); } int fib(int x) { if (x<=1) return 1; return fib(x-1) + fib(x-2); }'
+
+# [27] 支持一维数组
+assert 3 'int main() { int x[2]; int *y=&x; *y=3; return *x; }'
+assert 3 'int main() { int x[3]; *x=3; *(x+1)=4; *(x+2)=5; return *x; }'
+assert 4 'int main() { int x[3]; *x=3; *(x+1)=4; *(x+2)=5; return *(x+1); }'
+assert 5 'int main() { int x[3]; *x=3; *(x+1)=4; *(x+2)=5; return *(x+2); }'
 
 # 如果运行正常未提前退出，程序将显示OK
 echo OK

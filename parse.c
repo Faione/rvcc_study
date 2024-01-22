@@ -183,8 +183,7 @@ static void insert_param_to_locals(Type *param) {
 // mul = unary ("*" unary | "/" unary)*
 // unary = ("+" | "-" | "*" | "&") unary | postfix
 // postfix = primary ("[" expr "]")*
-// primary = "(" expr ")" | ident | fncall | num
-
+// primary = "(" expr ")" | "sizeof" unary | ident | fncall | num
 // fncall = ident "(" (assign ("," assign)*)? ")"
 
 // 传入 Token** 与 Token*，
@@ -631,13 +630,20 @@ PARSER_DEFINE(fncall) {
   return node;
 }
 
-// primary = "(" expr ")" | ident | fncall | num
+// primary = "(" expr ")" | "sizeof" unary | ident | fncall | num
 PARSER_DEFINE(primary) {
   // "(" expr ")"
   if (equal(token, "(")) {
     Node *node = expr(&token, token->next);
     *rest = skip(token, ")");
     return node;
+  }
+
+  // "sizeof" unary
+  if (equal(token, "sizeof")) {
+    Node *node = unary(rest, token->next);
+    add_type(node);
+    return new_node_num(node->type->size, token);
   }
 
   // ident
@@ -649,7 +655,7 @@ PARSER_DEFINE(primary) {
 
     // ident var
     Object *var = find_var_by_token(token);
-    if (!var) // 变量在声明中定义，必须存在
+    if (!var) // 变量在声明中定义，必须存在`
       error_token(token, "undefined variable");
 
     *rest = token->next;

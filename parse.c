@@ -181,8 +181,10 @@ static void insert_param_to_locals(Type *param) {
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 // add = mul ("+" mul | "-" mul)*
 // mul = unary ("*" unary | "/" unary)*
-// unary = ("+" | "-" | "*" | "&") unary | primary
+// unary = ("+" | "-" | "*" | "&") unary | postfix
+// postfix = primary ("[" expr "]")*
 // primary = "(" expr ")" | ident | fncall | num
+
 // fncall = ident "(" (assign ("," assign)*)? ")"
 
 // 传入 Token** 与 Token*，
@@ -202,6 +204,7 @@ PARSER_DEFINE(relational);
 PARSER_DEFINE(add);
 PARSER_DEFINE(mul);
 PARSER_DEFINE(unary);
+PARSER_DEFINE(postfix);
 PARSER_DEFINE(primary);
 
 static Type *declspec(Token **rest, Token *token);
@@ -560,7 +563,7 @@ PARSER_DEFINE(mul) {
   return node;
 }
 
-// unary = ("+" | "-" | "*" | "&") unary | primary
+// unary = ("+" | "-" | "*" | "&") unary | postfix
 PARSER_DEFINE(unary) {
   // + 一元运算符无影响，跳过即可
   // unary无论如何都会调用 primary 进行 rest 的设置
@@ -583,7 +586,23 @@ PARSER_DEFINE(unary) {
   if (equal(token, "&"))
     return new_node_unary(ND_ADDR, unary(rest, token->next), token);
 
-  return primary(rest, token);
+  return postfix(rest, token);
+}
+
+// postfix = primary ("[" expr "]")*
+PARSER_DEFINE(postfix) {
+  Node *node = primary(&token, token);
+
+  // x[][]...[]
+  while (equal(token, "[")) {
+    Token *start = token;
+    Node *index = expr(&token, token->next);
+    token = skip(token, "]");
+    node = new_node_unary(ND_DEREF, new_node_add(node, index, start), start);
+  }
+
+  *rest = token;
+  return node;
 }
 
 // fncall = ident "(" (assign ("," assign)*)? ")"

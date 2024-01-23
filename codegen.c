@@ -78,9 +78,15 @@ static void gen_addr(Node *node) {
 
   switch (node->kind) {
   case ND_VAR: // Object var 为指针, 在 prog 中被修改后, 同时也能从 Node 访问
-    printf("  # 获取变量%s的栈内地址为%d(fp)\n", node->var->name,
-           node->var->offset);
-    printf("  addi a0, fp, %d\n", node->var->offset);
+    if (node->var->is_local) { // local var
+      printf("  # 获取变量%s的栈内地址为%d(fp)\n", node->var->name,
+             node->var->offset);
+      printf("  addi a0, fp, %d\n", node->var->offset);
+    } else { // global var
+      printf("  # 获取全局变量%s的地址\n", node->var->name);
+      // la 指令是一个伪指令，将 %s symbol 标记的内存地址加载到 a0 中
+      printf("  la a0, %s\n", node->var->name);
+    }
     return;
   case ND_DEREF: // 对一个解引用expr进行取地址
     gen_expr(node->lhs);
@@ -310,18 +316,39 @@ static void gen_stmt(Node *node) {
   error_token(node->token, "invalid statement");
 }
 
-void codegen(Object *prog) {
-  assign_local_val_offsets(prog);
+// 生成 .data 段
+//
+// 存放 全局变量
+static void emit_data(Object *prog) {
+  for (Object *var = prog; var; var = var->next) {
+    if (var->is_function)
+      continue;
 
-  // 为每个函数单独生成代码
+    printf("  # 数据段标签\n");
+    printf("  .data\n");
+    printf("  .globl %s\n", var->name);
+    printf("  # 全局变量%s\n", var->name);
+    printf("%s:\n", var->name);
+    printf("  # 零填充%d位\n", var->type->size);
+    printf("  .zero %d\n", var->type->size);
+  }
+}
+
+// 生成 .text 段
+//
+// 存放代码(Function)
+static void emit_text(Object *prog) {
   for (Object *f = prog; f; f = f->next) {
+    if (!f->is_function)
+      continue;
+
     printf("  # 定义全局%s段\n", f->name);
     printf("  .globl %s\n", f->name);
-
     printf("  .text\n");
-    printf("\n# =====%s段开始===============\n", f->name);
+    printf("# =====%s段开始===============\n", f->name);
     printf("# %s段标签\n", f->name);
     printf("%s:\n", f->name);
+
     CUR_FUNC = f;
 
     // 栈布局
@@ -375,4 +402,15 @@ void codegen(Object *prog) {
     printf("  # 返回a0值给系统调用\n");
     printf("  ret\n");
   }
+}
+
+void codegen(Object *prog) {
+  // 计算每个 Function 中的局部变量偏移
+  assign_local_val_offsets(prog);
+
+  // 生成 .data 段
+  emit_data(prog);
+
+  // 生成 .text 段
+  emit_text(prog);
 }

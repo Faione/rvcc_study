@@ -1,4 +1,5 @@
 #include "rvcc.h"
+#include <stdbool.h>
 
 //
 // 二、语法分析， 生成AST
@@ -12,6 +13,13 @@ Object *GLOBALS;
 static Object *find_var_by_token(Token *token) {
   for (Object *var = LOCALS; var; var = var->next) {
     // 简单判断 -> 负载判断, 提升效率
+    if (strlen(var->name) == token->len &&
+        !strncmp(token->loc, var->name, token->len))
+      return var;
+  }
+
+  // 查找全局变量中是否有同名变量
+  for (Object *var = GLOBALS; var; var = var->next) {
     if (strlen(var->name) == token->len &&
         !strncmp(token->loc, var->name, token->len))
       return var;
@@ -173,8 +181,11 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
   return NULL;
 }
 
-// program = function*
+// program = (function_def | global_variable_def) *
+// function_def = declspec function
 // function = declspec declarator "{" compound_stmt*
+// global_variable_def = declspec global_variable
+// global_variable = (declarator ("," declarator))* ";")*
 // declspec = "int"
 // declarator = "*"* ident type_suf
 // type_suf = "(" func_params | "[" num "]" type_suf | ε
@@ -226,8 +237,6 @@ static Type *declspec(Token **rest, Token *token);
 static Type *declarator(Token **rest, Token *token, Type *type);
 
 /**
- * func_params(Token **rest, Token *token, Type *type)
- *
  * func_params = param ("," param)*)? ")"
  * param = declspec declarator
  *
@@ -267,15 +276,11 @@ static Type *func_params(Token **rest, Token *token, Type *type) {
 }
 
 /**
- * type_suf(Token **rest, Token *token, Type *type)
- *
  * type_suf = "(" func_params | "[" num "]" type_suf | ε
  *
  * @param rest 指向剩余token指针的指针
  * @param token 正在处理的 token
- * @param type type_suf 之前所识别出来的类型 indent
- *
- * @return 构造好的 Type
+ * @return 构造好的 Type。
  */
 static Type *type_suf(Token **rest, Token *token, Type *type) {
   if (equal(token, "(")) // 函数
@@ -292,7 +297,13 @@ static Type *type_suf(Token **rest, Token *token, Type *type) {
   return type;
 }
 
-// declspec = "int"
+/**
+ * declspec = "int"
+ *
+ * @param rest 指向剩余token指针的指针
+ * @param token 正在处理的 token
+ * @return 构造好的 Type。
+ */
 static Type *declspec(Token **rest, Token *token) {
   *rest = skip(token, "int");
   return TYPE_INT;
@@ -300,6 +311,14 @@ static Type *declspec(Token **rest, Token *token) {
 
 // declarator = "*"* ident type_suf
 // Type *type 为基础类型(如 int)
+
+/**
+ * declarator = "*"* ident type_suf
+ *
+ * @param rest 指向剩余token指针的指针
+ * @param token 正在处理的 token
+ * @return 构造好的 Type。
+ */
 static Type *declarator(Token **rest, Token *token, Type *type) {
   // 处理多个 *
   // var, * -> * -> * -> * -> base_type
@@ -689,13 +708,37 @@ PARSER_DEFINE(primary) {
   return NULL;
 }
 
-// function = declspec declarator "{" compoundStmt*
-// type 为基础类型，即返回值的类型
-static Token *function(Token *token, Type *type) {
+/*
+ * global_variable = (declarator ("," declarator))* ";")*
+ *
+ * 当前仅支持全局变量的声明
+ * @param type 为基础类型，如 int
+ */
+static Token *global_variable(Token *token, Type *base) {
+  bool is_first = true;
+  while (!consume(&token, token, ";")) {
+    // 处理 int x,y 格式
+    if (!is_first)
+      token = skip(token, ",");
+    is_first = false;
+
+    Type *type = declarator(&token, token, base);
+    new_global_var(get_ident(type->token), type);
+  }
+
+  return token;
+}
+
+/*
+ * function = declarator "{" compoundStmt*
+ *
+ * @param base 为基础类型，即返回值的类型
+ */
+static Token *function(Token *token, Type *base) {
   // type为函数类型
   // 指向 return type, 同时判断指针
   // type->token 指向了 ident 对应的 token
-  type = declarator(&token, token, type);
+  Type *type = declarator(&token, token, base);
   Object *func = new_global_var(get_ident(type->token), type);
   func->is_function = true;
 
@@ -712,14 +755,31 @@ static Token *function(Token *token, Type *type) {
   return token;
 }
 
-// program = function*
+// 尝试生成 declarator 来判断是否是 FUNC
+static bool is_function(Token *token) {
+  Type dummy = {};
+  Type *type = declarator(&token, token, &dummy);
+  return type->kind == TY_FUNC;
+}
+
+// program = (function_def | global_variable_def) *
+// function_def = declspec function
+// global_variable_def = declspec global_variable
 Object *parse(Token *token) {
   GLOBALS = NULL;
 
   while (token->kind != TK_EOF) {
     // 函数返回值类型
     Type *type = declspec(&token, token);
-    token = function(token, type);
+
+    // function
+    if (is_function(token)) {
+      token = function(token, type);
+      continue;
+    }
+
+    // global_variable
+    token = global_variable(token, type);
   }
 
   return GLOBALS;

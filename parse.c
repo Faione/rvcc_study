@@ -1,10 +1,77 @@
 #include "rvcc.h"
-#include <stdlib.h>
-#include <string.h>
 
 //
 // 二、语法分析， 生成AST
 //
+
+// 变量实例均保存在全局的 LOCALS 链表中
+Object *LOCALS;
+Object *GLOBALS;
+
+// 寻找 LOCALS 中是否有与 ident token 同名的变量
+static Object *find_var_by_token(Token *token) {
+  for (Object *var = LOCALS; var; var = var->next) {
+    // 简单判断 -> 负载判断, 提升效率
+    if (strlen(var->name) == token->len &&
+        !strncmp(token->loc, var->name, token->len))
+      return var;
+  }
+
+  return NULL;
+}
+
+// 获取标识符字符串
+static char *get_ident(Token *token) {
+  if (token->kind != TK_IDENT)
+    error_token(token, "expected an identifier");
+  return strndup(token->loc, token->len);
+}
+
+// 获取数字
+static int get_num(Token *token) {
+  if (token->kind != TK_NUM)
+    error_token(token, "expected a number");
+
+  return token->val;
+}
+
+static Object *new_var(char *name, Type *type) {
+  Object *var = calloc(1, sizeof(Object));
+  var->name = name;
+  var->type = type;
+  return var;
+}
+
+// 创建以 Local 变量，并头插到 LOCALS 中
+// 头插保证了每次 LOCALS 更新后，LOCALS 链表头都会变
+static Object *new_local_var(char *name, Type *type) {
+  Object *var = new_var(name, type);
+  var->is_local = true;
+
+  // 头插法
+  var->next = LOCALS;
+  LOCALS = var;
+  return var;
+}
+
+// 创建以 Global 变量，并头插到 GLOBALS 中
+static Object *new_global_var(char *name, Type *type) {
+  Object *var = new_var(name, type);
+  var->is_local = false;
+
+  // 头插法
+  var->next = GLOBALS;
+  GLOBALS = var;
+  return var;
+}
+
+// 递归地将函数形参加入到 Local 中
+static void insert_param_to_locals(Type *type) {
+  if (type) {
+    insert_param_to_locals(type->next);
+    new_local_var(get_ident(type->token), type);
+  }
+}
 
 // Node 的构造方法
 static Node *new_node(NodeKind kind, Token *token) {
@@ -104,57 +171,6 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
   // num - ptr
   error_token(token, "invalid operands");
   return NULL;
-}
-
-// 变量实例均保存在全局的 LOCALS 链表中
-Object *LOCALS;
-
-// 寻找 LOCALS 中是否有与 ident token 同名的变量
-static Object *find_var_by_token(Token *token) {
-  for (Object *var = LOCALS; var; var = var->next) {
-    // 简单判断 -> 负载判断, 提升效率
-    if (strlen(var->name) == token->len &&
-        !strncmp(token->loc, var->name, token->len))
-      return var;
-  }
-
-  return NULL;
-}
-
-// 获取标识符字符串
-static char *get_ident(Token *token) {
-  if (token->kind != TK_IDENT)
-    error_token(token, "expected an identifier");
-  return strndup(token->loc, token->len);
-}
-
-// 获取数字
-static int get_num(Token *token) {
-  if (token->kind != TK_NUM)
-    error_token(token, "expected a number");
-
-  return token->val;
-}
-
-// 创建以 Local 变量，并头插到 LOCALS 中
-// 头插保证了每次 LOCALS 更新后，LOCALS 链表头都会变
-static Object *new_local_var(char *name, Type *type) {
-  Object *var = calloc(1, sizeof(Object));
-  var->name = name;
-  var->type = type;
-
-  // 头插法
-  var->next = LOCALS;
-  LOCALS = var;
-  return var;
-}
-
-// 递归地将函数形参加入到 Local 中
-static void insert_param_to_locals(Type *param) {
-  if (param) {
-    insert_param_to_locals(param->next);
-    new_local_var(get_ident(param->token), param);
-  }
 }
 
 // program = function*
@@ -674,40 +690,37 @@ PARSER_DEFINE(primary) {
 }
 
 // function = declspec declarator "{" compoundStmt*
-static Function *function(Token **rest, Token *token) {
-  // 返回值的基础类型
-  Type *type = declspec(&token, token);
-
+// type 为基础类型，即返回值的类型
+static Token *function(Token *token, Type *type) {
   // type为函数类型
   // 指向 return type, 同时判断指针
   // type->token 指向了 ident 对应的 token
   type = declarator(&token, token, type);
+  Object *func = new_global_var(get_ident(type->token), type);
+  func->is_function = true;
 
   // 清空局部变量
   LOCALS = NULL;
 
-  Function *func = calloc(1, sizeof(Function));
-  func->name = get_ident(type->token);
   // 函数参数
   insert_param_to_locals(type->params);
   func->params = LOCALS;
 
   token = skip(token, "{");
-  func->body = compound_stmt(rest, token);
+  func->body = compound_stmt(&token, token);
   func->locals = LOCALS;
-  return func;
+  return token;
 }
 
 // program = function*
-Function *parse(Token *token) {
-
-  Function head = {};
-  Function *cur = &head;
+Object *parse(Token *token) {
+  GLOBALS = NULL;
 
   while (token->kind != TK_EOF) {
-    cur->next = function(&token, token);
-    cur = cur->next;
+    // 函数返回值类型
+    Type *type = declspec(&token, token);
+    token = function(token, type);
   }
 
-  return head.next;
+  return GLOBALS;
 }

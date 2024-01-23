@@ -1,6 +1,4 @@
 #include "rvcc.h"
-#include <assert.h>
-#include <stdio.h>
 
 //
 // 三、语义分析,生成代码
@@ -13,7 +11,7 @@ static void gen_expr(Node *node);
 // 参数寄存器
 static char *func_arg_regs[] = {"a0", "a1", "a2", "a3", "a4", "a5"};
 // 当前函数
-static Function *CUR_FUNC;
+static Object *CUR_FUNC;
 
 // (2) 栈
 // 生成的代码中,利用栈保存中间数据
@@ -55,10 +53,14 @@ static int align_to(int n, int align) {
 }
 
 // 为链表中每个 Function 计算本地变量偏移及栈大小
-static void assign_local_val_offsets(Function *prog) {
+static void assign_local_val_offsets(Object *prog) {
 
-  for (Function *f = prog; f; f = f->next) {
+  for (Object *f = prog; f; f = f->next) {
+    if (!f->is_function)
+      continue;
+
     int offset = 0;
+
     // 计算每个 local var 相对于栈顶的偏移
     for (Object *var = f->locals; var; var = var->next) {
       offset += var->type->size;
@@ -308,13 +310,15 @@ static void gen_stmt(Node *node) {
   error_token(node->token, "invalid statement");
 }
 
-void codegen(Function *prog) {
+void codegen(Object *prog) {
   assign_local_val_offsets(prog);
 
   // 为每个函数单独生成代码
-  for (Function *f = prog; f; f = f->next) {
+  for (Object *f = prog; f; f = f->next) {
     printf("  # 定义全局%s段\n", f->name);
     printf("  .globl %s\n", f->name);
+
+    printf("  .text\n");
     printf("\n# =====%s段开始===============\n", f->name);
     printf("# %s段标签\n", f->name);
     printf("%s:\n", f->name);

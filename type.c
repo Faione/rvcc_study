@@ -54,21 +54,47 @@ void add_type(Node *node) {
     return;
 
   // 递归访问所有的子节点
-  add_type(node->lhs);
-  add_type(node->rhs);
-  add_type(node->cond);
-  add_type(node->then);
-  add_type(node->els);
-  add_type(node->init);
-  add_type(node->inc);
-
-  // 遍历 stmt 链表
-  for (Node *n = node->body; n; n = n->next)
-    add_type(n);
-
-  // 访问所有参数以增加类型
-  for (Node *n = node->args; n; n = n->next)
-    add_type(n);
+  switch (node->kind) {
+  case ND_ADD:
+  case ND_SUB:
+  case ND_MUL:
+  case ND_DIV:
+  case ND_NEG:
+  case ND_ASSIGN:
+  case ND_EQ:
+  case ND_NE:
+  case ND_LT:
+  case ND_LE:
+  case ND_RETURN:
+  case ND_ADDR:
+  case ND_DEREF:
+  case ND_EXPR_STMT:
+    add_type(node->lhs);
+    add_type(node->rhs);
+    break;
+  case ND_IF:
+    add_type(node->cond);
+    add_type(node->then);
+    add_type(node->els);
+    break;
+  case ND_FOR:
+    add_type(node->cond);
+    add_type(node->then);
+    add_type(node->init);
+    add_type(node->inc);
+    break;
+  case ND_FNCALL:
+    // 访问所有参数以增加类型
+    for (Node *n = node->args; n; n = n->next)
+      add_type(n);
+    break;
+  case ND_BLOCK:
+    // 遍历 stmt 链表
+    for (Node *n = node->body; n; n = n->next)
+      add_type(n);
+  default: // ND_VAR, ND_NUM
+    break;
+  }
 
   switch (node->kind) {
   case ND_ADD:

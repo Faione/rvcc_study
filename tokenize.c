@@ -1,5 +1,5 @@
 #include "rvcc.h"
-#include <stdbool.h>
+
 //
 // 一、词法分析
 //

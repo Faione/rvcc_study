@@ -81,59 +81,87 @@ typedef struct Type Type;
 
 // 本地变量
 typedef struct Object Object;
+
 struct Object {
   Object *next; // 下一个Object
-  char *name;   // 变量名称
-  Type *type;   // 变量类型
+  char *name;   // 名称
+  Type *type;   // 类型
 
-  int offset; // 相对栈顶的偏移量
-};
+  bool is_local;    // 局部变量与否
+  bool is_function; // ObjectMember 属性
 
-// 函数
-typedef struct Function Function;
-struct Function {
-  Function *next; // 下一个函数
-  char *name;     // 函数名称
-  Object *params; // 形参
+  // union ObjectMember member;
 
-  Node *body; // 函数体(AST)
+  union {
+    // Var
+    int offset; // 相对栈顶的偏移量
 
-  Object *locals; // 本地变量
-  int stack_size; // 栈大小
+    // Function
+    struct {
+      Object *params; // 形参
+      Node *body;     // 函数体(AST)
+      Object *locals; // 本地变量
+      int stack_size; // 栈大小
+    };
+  };
 };
 
 struct Node {
   Token *token;  // 节点对应终结符
   NodeKind kind; // 节点的类型
   Type *type;    // 节点中数据的类型
-  Object *var;   // 存储 ND_VAR 的变量信息
-  int val;       // 存储 ND_NUM 的值
-
-  char *func_name; // 函数名称
-  Node *args;      // 函数参数
-
   Node *next;
 
-  Node *lhs;
-  Node *rhs;
-  Node *cond; // 条件
-  Node *then; // 判断成立
-  Node *els;  // 判断失败
-  Node *init; // 循环初始化语句
-  Node *inc;  // 循环变量变化语句
+  union {
 
-  Node *body; // 代码块
+    // [l/r] ND_ADD, ND_SUB, ND_MUL, ND_DIV
+    //       ND_ASSIGN, ND_EQ,ND_NE,ND_LT,ND_LE
+    // [unary] ND_RETURN, ND_DEREF, ND_ADDR, ND_EXPR_STMT
+    struct {
+      Node *lhs;
+      Node *rhs;
+    };
+
+    // ND_VAR
+    Object *var; // 存储 ND_VAR 的变量信息
+
+    // ND_NUM;
+    int val; // 存储 ND_NUM 的值
+
+    // ND_BLOCK
+    Node *body; // 代码块
+
+    // ND_FNCALL
+    struct {
+      char *func_name; // 函数名称
+      Node *args;      // 函数参数
+    };
+
+    // ND_IF | ND_FOR
+    struct {
+      Node *cond; // 条件
+      Node *then; // 判断成立
+      union {
+        Node *els; // 判断失败
+
+        struct {      // ND_FOR
+          Node *init; // 循环初始化语句
+          Node *inc;  // 循环变量变化语句
+        };
+      };
+    };
+  };
 };
 
 // 语法解析入口函数
-Function *parse(Token *token);
+Object *parse(Token *token);
 
 //
 // 三、语义分析，生成代码
 //
 
 // 代码生成入口函数
-void codegen(Function *prog);
+void codegen(Object *prog);
 
 //
 // 四、类型系统
@@ -150,13 +178,22 @@ typedef enum {
 struct Type {
   TypeKind kind; // 类型
   int size;      // 大小
-  Type *next;    //下一个类型
+  Token *token;  // 变量的名称
 
-  int len;        // 为数组时，数组的长度
-  Token *token;   // 为变量时，变量token
-  Type *base;     // 为指针时，所指向的类型
-  Type *ret_type; // 为函数时，返回值的类型
-  Type *params;   // 形参
+  union {
+    // TY_PTR, TY_ARRAY
+    struct {
+      Type *base; // 为指针时，指向的类型; 为数组时,下标对应的类型
+      int len; // 为数组时，数组的长度
+    };
+
+    // TY_FUNC
+    struct {
+      Type *ret_type; // 返回值的类型
+      Type *params;   // 形参
+      Type *next;     //下一个类型
+    };
+  };
 };
 
 // Type int

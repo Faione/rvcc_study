@@ -1,11 +1,14 @@
 #include "rvcc.h"
-#include <stdlib.h>
 
 // 复合字面量声明了一个仅初始化了 kind 的匿名Type结构体，使用TYPE_INT指向他
 Type *TYPE_INT = &(Type){TY_INT, 8};
+Type *TYPE_CHAR = &(Type){TY_CHAR, 1};
 
 // 判断是否为 Type int
-bool is_integer(Type *type) { return type->kind == TY_INT; }
+// 目前将 char 也视为 int
+bool is_integer(Type *type) {
+  return type->kind == TY_INT || type->kind == TY_CHAR;
+}
 
 // 复制类型
 // 浅拷贝，仅复制栈上数据

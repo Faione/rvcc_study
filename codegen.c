@@ -104,16 +104,22 @@ static void load(Type *type) {
   if (type->kind == TY_ARRAY)
     return;
   printf("  # 读取a0中存放的地址, 得到的值存入a0\n");
-  printf("  ld a0, 0(a0)\n");
+  if (type->size == 1)
+    printf("  lb a0, 0(a0)\n");
+  else
+    printf("  ld a0, 0(a0)\n");
 }
 
 // 栈保存了一个地址
 // 将此地址 pop 到 a1 中
 // 将 a0 中的值保存到此地址
-static void store(void) {
+static void store(Type *type) {
   pop("a1");
   printf("  # 将a0的值, 写入到 a1 中存放的地址\n");
-  printf("  sd a0, 0(a1)\n");
+  if (type->size == 1)
+    printf("sb a0, 0(a1)\n");
+  else
+    printf("  sd a0, 0(a1)\n");
 }
 
 // 词法分析
@@ -151,7 +157,7 @@ void gen_expr(Node *node) {
     push();
     // 右值
     gen_expr(node->rhs);
-    store();
+    store(node->type);
     return;
   case ND_FNCALL: {
     int argc = 0;
@@ -379,7 +385,10 @@ static void emit_text(Object *prog) {
     int i = 0;
     for (Object *var = f->params; var; var = var->next) {
       printf("  # 将%s寄存器的值存入%s的栈地址\n", func_arg_regs[i], var->name);
-      printf("  sd %s, %d(fp)\n", func_arg_regs[i++], var->offset);
+      if (var->type->size == 1)
+        printf("  sb %s, %d(fp)\n", func_arg_regs[i++], var->offset);
+      else
+        printf("  sd %s, %d(fp)\n", func_arg_regs[i++], var->offset);
     }
 
     printf("\n# =====%s段主体===============\n", f->name);

@@ -170,6 +170,7 @@ void codegen(Object *prog);
 // 类型
 typedef enum {
   TY_INT,   // int整形
+  TY_CHAR,  // char字符
   TY_PTR,   // 指针类型
   TY_FUNC,  // 函数类型
   TY_ARRAY, //数组
@@ -198,6 +199,8 @@ struct Type {
 
 // Type int
 extern Type *TYPE_INT;
+// Type char
+extern Type *TYPE_CHAR;
 
 // 判断是否为 Type int
 bool is_integer(Type *type);

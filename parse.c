@@ -1,5 +1,4 @@
 #include "rvcc.h"
-#include <stdbool.h>
 
 //
 // 二、语法分析， 生成AST
@@ -41,6 +40,11 @@ static int get_num(Token *token) {
     error_token(token, "expected a number");
 
   return token->val;
+}
+
+// 判断是否为类型名称
+static bool is_typename(Token *token) {
+  return equal(token, "char") | equal(token, "int");
 }
 
 static Object *new_var(char *name, Type *type) {
@@ -186,7 +190,7 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
 // function = declspec declarator "{" compound_stmt*
 // global_variable_def = declspec global_variable
 // global_variable = (declarator ("," declarator))* ";")*
-// declspec = "int"
+// declspec = "char" | "int"
 // declarator = "*"* ident type_suf
 // type_suf = "(" func_params | "[" num "]" type_suf | ε
 // func_params = param ("," param)*)? ")"
@@ -298,13 +302,17 @@ static Type *type_suf(Token **rest, Token *token, Type *type) {
 }
 
 /**
- * declspec = "int"
+ * declspec = "char" | "int"
  *
  * @param rest 指向剩余token指针的指针
  * @param token 正在处理的 token
  * @return 构造好的 Type。
  */
 static Type *declspec(Token **rest, Token *token) {
+  if (equal(token, "char")) {
+    *rest = token->next;
+    return TYPE_CHAR;
+  }
   *rest = skip(token, "int");
   return TYPE_INT;
 }
@@ -339,14 +347,14 @@ static Type *declarator(Token **rest, Token *token, Type *type) {
   return type;
 }
 
-// compoundStmt = stmt* "}"
+// compound_stmt = (declaration | stmt)* "}"
 PARSER_DEFINE(compound_stmt) {
   Node head = {};
   Node *cur = &head;
   Node *node = new_node(ND_BLOCK, token);
 
   while (!equal(token, "}")) {
-    if (equal(token, "int"))
+    if (is_typename(token))
       cur->next = declaration(&token, token);
     else
       cur->next = stmt(&token, token);

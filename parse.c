@@ -80,10 +80,7 @@ static Object *new_global_var(char *name, Type *type) {
 // 生成唯一的变量名称(对匿名变量而言)
 static char *new_unique_name(void) {
   static int id = 0;
-  char *buf = calloc(1, 20);
-
-  sprintf(buf, ".L..%d", id++);
-  return buf;
+  return format(".L..%d", id++);
 }
 
 // 创建匿名的 Global 变量

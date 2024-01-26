@@ -12,6 +12,12 @@ typedef struct Node Node;
 typedef struct Type Type;
 
 //
+// 字符串处理
+//
+
+char *format(char *fmt, ...);
+
+//
 // 一、词法分析
 //
 

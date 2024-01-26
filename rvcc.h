@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct Node Node;
+typedef struct Type Type;
+
 //
 // 一、词法分析
 //
@@ -16,18 +19,28 @@ typedef enum {
   TK_IDENT,   // 标记符，可以为变量名、函数名等
   TK_PUNCT,   // 操作符: + -
   TK_KEYWORD, // 关键字
+  TK_STR,     // 字符串字面量
   TK_NUM,     // 数字
   TK_EOF,     // 文件终止符
 } TokenKind;
 
 typedef struct Token Token;
-
 struct Token {
   TokenKind kind; // 类型
   Token *next;    // 下一个终结符
-  int val;        // 值
   char *loc;      // 在被解析字符串中的位置
   int len;        // 长度
+
+  union {
+    // TK_NUM
+    int val; //值
+
+    // TK_STR
+    struct {
+      Type *type;
+      char *str; // 字符串字面量，包括 '\0'
+    };
+  };
 };
 
 // 输出错误信息
@@ -75,10 +88,6 @@ typedef enum {
   ND_NUM,
 } NodeKind;
 
-// AST 节点
-typedef struct Node Node;
-typedef struct Type Type;
-
 // 本地变量
 typedef struct Object Object;
 
@@ -89,8 +98,6 @@ struct Object {
 
   bool is_local;    // 局部变量与否
   bool is_function; // ObjectMember 属性
-
-  // union ObjectMember member;
 
   union {
     // Var
@@ -103,6 +110,9 @@ struct Object {
       Object *locals; // 本地变量
       int stack_size; // 栈大小
     };
+
+    // String Literal
+    char *init_data; // 初始值
   };
 };
 

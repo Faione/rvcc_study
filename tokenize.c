@@ -149,6 +149,26 @@ static void convert_keywords(Token *token) {
   }
 }
 
+// 读取字符串字面量
+static Token *read_string_literal(char *start) {
+  // 形如 "foo" 的 token 即是 string literal
+  // 字符串中不能出现 \n 或 \0
+  char *p = start + 1;
+  for (; *p != '"'; p++) {
+    if (*p == '\n' || *p == '\0')
+      error_at(start, "unclosed string literal");
+  }
+
+  Token *token = new_token(TK_STR, start, p + 1);
+
+  // 字符串字面量类型为 char[]，包括了双引号
+  token->type = array_type(TYPE_CHAR, p - start);
+
+  // 将双引号内的内容拷贝到 token 中的 str 字段
+  token->str = strndup(start + 1, p - start - 1);
+  return token;
+}
+
 // 终结符解析
 // head -> token1 -> token2 -> token3
 Token *tokenize(char *p) {
@@ -172,6 +192,14 @@ Token *tokenize(char *p) {
       // 执行之后，p指向的是第一个非数字字符
       cur->val = strtoul(p, &p, 10);
       cur->len = p - old_p;
+      continue;
+    }
+
+    // 解析字符串字面量
+    if (*p == '"') {
+      cur->next = read_string_literal(p);
+      cur = cur->next;
+      p += cur->len;
       continue;
     }
 

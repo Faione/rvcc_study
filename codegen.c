@@ -332,11 +332,25 @@ static void emit_data(Object *prog) {
 
     printf("  # 数据段标签\n");
     printf("  .data\n");
-    printf("  .globl %s\n", var->name);
-    printf("  # 全局变量%s\n", var->name);
-    printf("%s:\n", var->name);
-    printf("  # 零填充%d位\n", var->type->size);
-    printf("  .zero %d\n", var->type->size);
+
+    // 判断变量是否有初始值
+    if (var->init_data) {
+      printf("%s:\n", var->name);
+      // 将初始值内容进行打印
+      for (int i = 0; i < var->type->size; i++) {
+        char c = var->init_data[i];
+        if (isprint(c))
+          printf("  .byte %d\t# 字符:  %c\n", c, c);
+        else
+          printf("  .byte %d\n", c);
+      }
+    } else {
+      printf("  .globl %s\n", var->name);
+      printf("  # 全局变量%s\n", var->name);
+      printf("%s:\n", var->name);
+      printf("  # 零填充%d位\n", var->type->size);
+      printf("  .zero %d\n", var->type->size);
+    }
   }
 }
 

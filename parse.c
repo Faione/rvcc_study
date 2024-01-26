@@ -54,7 +54,7 @@ static Object *new_var(char *name, Type *type) {
   return var;
 }
 
-// 创建以 Local 变量，并头插到 LOCALS 中
+// 创建 Local 变量，并头插到 LOCALS 中
 // 头插保证了每次 LOCALS 更新后，LOCALS 链表头都会变
 static Object *new_local_var(char *name, Type *type) {
   Object *var = new_var(name, type);
@@ -66,7 +66,7 @@ static Object *new_local_var(char *name, Type *type) {
   return var;
 }
 
-// 创建以 Global 变量，并头插到 GLOBALS 中
+// 创建 Global 变量，并头插到 GLOBALS 中
 static Object *new_global_var(char *name, Type *type) {
   Object *var = new_var(name, type);
   var->is_local = false;
@@ -74,6 +74,28 @@ static Object *new_global_var(char *name, Type *type) {
   // 头插法
   var->next = GLOBALS;
   GLOBALS = var;
+  return var;
+}
+
+// 生成唯一的变量名称(对匿名变量而言)
+static char *new_unique_name(void) {
+  static int id = 0;
+  char *buf = calloc(1, 20);
+
+  sprintf(buf, ".L..%d", id++);
+  return buf;
+}
+
+// 创建匿名的 Global 变量
+static Object *new_anon_glabol_var(Type *type) {
+  return new_global_var(new_unique_name(), type);
+}
+
+// 新增字符串字面量
+static Object *new_string_literal(char *str, Type *type) {
+  Object *var = new_anon_glabol_var(type);
+  // 字面量的初始值为双引号包裹的部分，而不包括双引号
+  var->init_data = str;
   return var;
 }
 
@@ -214,7 +236,7 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
 // mul = unary ("*" unary | "/" unary)*
 // unary = ("+" | "-" | "*" | "&") unary | postfix
 // postfix = primary ("[" expr "]")*
-// primary = "(" expr ")" | "sizeof" unary | ident | fncall | num
+// primary = "(" expr ")" | "sizeof" unary | ident | fncall | str | num
 // fncall = ident "(" (assign ("," assign)*)? ")"
 
 // 传入 Token** 与 Token*，
@@ -673,7 +695,7 @@ PARSER_DEFINE(fncall) {
   return node;
 }
 
-// primary = "(" expr ")" | "sizeof" unary | ident | fncall | num
+// primary = "(" expr ")" | "sizeof" unary | ident | fncall | str | num
 PARSER_DEFINE(primary) {
   // "(" expr ")"
   if (equal(token, "(")) {
@@ -701,6 +723,13 @@ PARSER_DEFINE(primary) {
     if (!var) // 变量在声明中定义，必须存在`
       error_token(token, "undefined variable");
 
+    *rest = token->next;
+    return new_node_var(var, token);
+  }
+
+  // str
+  if (token->kind == TK_STR) {
+    Object *var = new_string_literal(token->str, token->type);
     *rest = token->next;
     return new_node_var(var, token);
   }

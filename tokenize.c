@@ -149,9 +149,55 @@ static void convert_keywords(Token *token) {
   }
 }
 
+#define CHAR_OCTAL(x) '0' <= x &&x <= '7'
+
+// 返回一位十六进制转十进制W
+//
+// hexDigit = [0-9a-fA-F]W
+//
+// 16: 0 1 2 3 4 5 6 7 8 9  A  B  C  D  E  F
+//
+// 10: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+static int from_hex(char c) {
+  if ('0' <= c && c <= '9')
+    return c - '0';
+  if ('a' <= c && c <= 'f')
+    return c - 'a' + 10;
+  return c - 'A' + 10;
+}
+
 // 读取转义字符
 // 返回字符本意的 char
-static int read_escaped_char(char *p) {
+static int read_escaped_char(char **pos, char *p) {
+  if (CHAR_OCTAL(*p)) {
+    int num = *p++ - '0';
+
+    // 限制处理3位的8进制数
+    for (; CHAR_OCTAL(*p) && p - *pos < 4; p++) {
+      num = (num << 3) + (*p - '0');
+    }
+
+    *pos = p;
+    return num;
+  }
+
+  if (*p == 'x') {
+    p++;
+    if (!isxdigit(*p))
+      error_at(p, "invalid hex escape sequence");
+
+    int num = 0;
+    // 读取一位或多位十六进制数字
+    // \xWXYZ = ((W*16+X)*16+Y)*16+Z
+    for (; isxdigit(*p); p++) {
+      num = (num << 4) + from_hex(*p);
+    }
+    *pos = p;
+    return num;
+  }
+
+  *pos = p + 1;
+
   switch (*p) {
   case 'a': // 响铃（警报）
     return '\a';
@@ -201,8 +247,7 @@ static Token *read_string_literal(char *start) {
   // 遍历双引号包裹的部分
   for (char *p = start + 1; p < end;) {
     if (*p == '\\') { // 解析转义
-      buf[real_len++] = read_escaped_char(p + 1);
-      p += 2;
+      buf[real_len++] = read_escaped_char(&p, p + 1);
     } else
       buf[real_len++] = *p++;
   }

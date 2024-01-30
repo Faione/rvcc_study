@@ -149,23 +149,70 @@ static void convert_keywords(Token *token) {
   }
 }
 
-// 读取字符串字面量
-static Token *read_string_literal(char *start) {
-  // 形如 "foo" 的 token 即是 string literal
-  // 字符串中不能出现 \n 或 \0
-  char *p = start + 1;
+// 读取转义字符
+// 返回字符本意的 char
+static int read_escaped_char(char *p) {
+  switch (*p) {
+  case 'a': // 响铃（警报）
+    return '\a';
+  case 'b': // 退格
+    return '\b';
+  case 't': // 水平制表符，tab
+    return '\t';
+  case 'n': // 换行
+    return '\n';
+  case 'v': // 垂直制表符
+    return '\v';
+  case 'f': // 换页
+    return '\f';
+  case 'r': // 回车
+    return '\r';
+  // 属于GNU C拓展
+  case 'e': // 转义符
+    return 27;
+  default: // 默认将原字符返回
+    return *p;
+  }
+}
+
+// 读取到字面量的结尾(右引号)
+//
+// 返回时，p 指向 右引号
+static char *read_string_literal_end(char *p) {
+  char *start = p;
   for (; *p != '"'; p++) {
-    if (*p == '\n' || *p == '\0')
+    if (*p == '\n' || *p == '\0') // 单行结尾
       error_at(start, "unclosed string literal");
   }
 
-  Token *token = new_token(TK_STR, start, p + 1);
+  return p;
+}
+
+// 读取字符串字面量
+//
+// 形如 "foo" 的 token 即是 string literal
+static Token *read_string_literal(char *start) {
+  char *end = read_string_literal_end(start + 1);
+
+  // 存储处理之后的字符串字面量, buf 大小为 总字符数 + 1
+  char *buf = calloc(1, end - start);
+  int real_len = 0;
+
+  // 遍历双引号包裹的部分
+  for (char *p = start + 1; p < end;) {
+    if (*p == '\\') { // 解析转义
+      buf[real_len++] = read_escaped_char(p + 1);
+      p += 2;
+    } else
+      buf[real_len++] = *p++;
+  }
+
+  Token *token = new_token(TK_STR, start, end + 1);
 
   // 字符串字面量类型为 char[]，包括了双引号
-  token->type = array_type(TYPE_CHAR, p - start);
-
-  // 将双引号内的内容拷贝到 token 中的 str 字段
-  token->str = strndup(start + 1, p - start - 1);
+  // 末尾多出的一位是 '\0' (calloc时进行的初始化)
+  token->type = array_type(TYPE_CHAR, real_len + 1);
+  token->str = buf;
   return token;
 }
 

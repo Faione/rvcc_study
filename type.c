@@ -145,6 +145,21 @@ void add_type(Node *node) {
     // ND_DEREF 的类型为指针指向的类型
     node->type = node->lhs->type->base;
     return;
+  case ND_STMT_EXPR:
+    // ND_STMT_EXPR类型为其中最后一个ND_EXPR_STMT lhs的类型
+    if (node->body) {
+      Node *stmt = node->body;
+      while (stmt->next)
+        stmt = stmt->next;
+      if (stmt->kind == ND_EXPR_STMT) {
+        node->type = stmt->lhs->type;
+        return;
+      }
+    }
+
+    error_token(node->token,
+                "statement expression returning void is not supported");
+    return;
   default:
     break;
   }

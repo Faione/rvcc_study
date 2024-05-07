@@ -39,7 +39,7 @@ struct Token {
 
   union {
     // TK_NUM
-    int val; //值
+    int val; // 值
 
     // TK_STR
     struct {
@@ -89,7 +89,8 @@ typedef enum {
   ND_FOR,       //  for / while 循环
   ND_BLOCK,     // { ... } 代码块
   ND_FNCALL,    // 函数调用
-  ND_EXPR_STMT, // 表达式
+  ND_EXPR_STMT, // 表达式语句
+  ND_STMT_EXPR, // 语句表达式
   ND_VAR,       // 变量
   ND_NUM,
 } NodeKind;
@@ -189,7 +190,7 @@ typedef enum {
   TY_CHAR,  // char字符
   TY_PTR,   // 指针类型
   TY_FUNC,  // 函数类型
-  TY_ARRAY, //数组
+  TY_ARRAY, // 数组
 } TypeKind;
 
 struct Type {
@@ -208,7 +209,7 @@ struct Type {
     struct {
       Type *ret_type; // 返回值的类型
       Type *params;   // 形参
-      Type *next;     //下一个类型
+      Type *next;     // 下一个类型
     };
   };
 };

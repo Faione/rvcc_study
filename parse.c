@@ -233,7 +233,13 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
 // mul = unary ("*" unary | "/" unary)*
 // unary = ("+" | "-" | "*" | "&") unary | postfix
 // postfix = primary ("[" expr "]")*
-// primary = "(" expr ")" | "sizeof" unary | ident | fncall | str | num
+// primary = "(" "{" stmt+ "}" ")"
+//           | "(" expr ")"
+//           | "sizeof" unary
+//           | ident
+//           | fncall
+//           | str
+//           | num
 // fncall = ident "(" (assign ("," assign)*)? ")"
 
 // 传入 Token** 与 Token*，
@@ -694,6 +700,14 @@ PARSER_DEFINE(fncall) {
 
 // primary = "(" expr ")" | "sizeof" unary | ident | fncall | str | num
 PARSER_DEFINE(primary) {
+  // "(" "{" stmt+ "}" ")"
+  if (equal(token, "(") && equal(token->next, "{")) {
+    Node *node = new_node(ND_STMT_EXPR, token);
+    node->body = compound_stmt(&token, token->next->next)->body;
+    *rest = skip(token, ")");
+    return node;
+  }
+
   // "(" expr ")"
   if (equal(token, "(")) {
     Node *node = expr(&token, token->next);

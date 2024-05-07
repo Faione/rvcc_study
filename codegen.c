@@ -5,6 +5,7 @@
 //
 
 static void gen_expr(Node *node);
+static void gen_stmt(Node *node);
 
 // (1) 函数
 
@@ -158,6 +159,10 @@ void gen_expr(Node *node) {
     // 右值
     gen_expr(node->rhs);
     store(node->type);
+    return;
+  case ND_STMT_EXPR:
+    for (Node *n = node->body; n; n = n->next)
+      gen_stmt(n);
     return;
   case ND_FNCALL: {
     int argc = 0;

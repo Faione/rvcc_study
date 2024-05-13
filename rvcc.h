@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -64,7 +65,7 @@ Token *skip(Token *token, char *str);
 bool consume(Token **rest, Token *token, char *str);
 // 终结符解析
 // token1 -> token2 -> token3
-Token *tokenize(char *p);
+Token *tokenize_file(char *path);
 
 //
 // 二、语法分析， 生成AST

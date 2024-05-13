@@ -5,7 +5,7 @@ int main(int argc, char **argv) {
     error("%s: invalid number of arguments", argv[0]);
 
   // 1. 词法分析
-  Token *token = tokenize(argv[1]);
+  Token *token = tokenize_file(argv[1]);
 
   // 2. 语法分析
   Object *prog = parse(token);

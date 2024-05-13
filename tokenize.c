@@ -4,7 +4,10 @@
 // 一、词法分析
 //
 
-// 计入当前的输入字符串
+// 记录当前正在处理的文件名
+static char *CUR_FILENAME;
+
+// 记录当前的输入字符串
 static char *CUR_INPUT;
 
 // 输出错误信息
@@ -21,12 +24,34 @@ void error(char *fmt, ...) {
 }
 
 // 指示错误出现的位置
+// foo.c:10: x = y + 1;
+//               ^ <错误信息>
 static void verror_at(char *loc, char *fmt, va_list va) {
-  // 输出源信息
-  fprintf(stderr, "%s\n", CUR_INPUT);
+  char *start = loc, *end = loc;
 
-  // 计算错误出现的位置并输出错误信息
-  int pos = loc - CUR_INPUT;
+  // 移动 line 到 loc 所在行的起始位置
+  // CUR_INPUT是字符串的第一个字符
+  while (CUR_INPUT < start && start[-1] != '\n')
+    start--;
+
+  // 计算行号
+  // start 之前遇到 n 个 '\n'，意味着有 n 行
+  // 而 start 位于第 n + 1 行
+  int num_line = 1;
+  for (char *p = CUR_INPUT; p < start; p++) {
+    if (*p == '\n')
+      num_line++;
+  }
+
+  // filename:line
+  // indent记录输出了多少个字符
+  int indent = fprintf(stderr, "%s:%d: ", CUR_FILENAME, num_line);
+  // 输出存在错误的行到end为止的文本
+  fprintf(stderr, "%.*s\n", (int)(end - start), start);
+
+  // 计算错误信息要添加的位点
+  int pos = loc - start + indent;
+
   // %*s 将会打印 pos 长度的字符串，若参数不满足长度 pos ，则使用空格补全
   fprintf(stderr, "%*s", pos, "");
   // 指示符
@@ -263,7 +288,8 @@ static Token *read_string_literal(char *start) {
 
 // 终结符解析
 // head -> token1 -> token2 -> token3
-Token *tokenize(char *p) {
+Token *tokenize(char *filename, char *p) {
+  CUR_FILENAME = filename;
   CUR_INPUT = p;
   Token head = {};
   Token *cur = &head;
@@ -327,3 +353,49 @@ Token *tokenize(char *p) {
   // head 实际是一个 dummy head
   return head.next;
 }
+
+// 从文件中读取文本到字符数组中
+static char *read_file(char *path) {
+  FILE *in;
+
+  if (strcmp(path, "-") == 0) {
+    // 文件名为 "-" 时，从stdin读取文本
+    in = stdin;
+  } else {
+    in = fopen(path, "r");
+    if (!in)
+      error("can't open %s: %s", path, strerror(errno));
+  }
+
+  char *buf;
+  size_t buf_len;
+  // 创建out数据流，将in中的文本数据读取到流中
+  // buf指针指向out中的数据，buf_len为数据长度
+  FILE *out = open_memstream(&buf, &buf_len);
+
+  // 使用 read_buf 作为中转，将数据从 in 读取到 out 中
+  while (true) {
+    char *read_buf[4096];
+    int num_read = fread(read_buf, sizeof(char), sizeof(read_buf), in);
+    if (num_read == 0)
+      break;
+    fwrite(read_buf, sizeof(char), num_read, out);
+  }
+
+  if (in != stdin)
+    fclose(in);
+
+  // 刷新写缓冲区，保证所有内容都写入到 out 中
+  fflush(out);
+
+  // 保证以 `\n` 结尾
+  if (buf_len == 0 || buf[buf_len - 1] != '\n')
+    fputc('\n', out);
+
+  // 满足字符串以 `\0` 结尾的要求
+  fputc('\0', out);
+
+  return buf;
+}
+
+Token *tokenize_file(char *path) { return tokenize(path, read_file(path)); }

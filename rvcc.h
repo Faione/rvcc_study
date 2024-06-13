@@ -179,7 +179,7 @@ Object *parse(Token *token);
 //
 
 // 代码生成入口函数
-void codegen(Object *prog);
+void codegen(Object *prog, FILE *out);
 
 //
 // 四、类型系统

@@ -1,4 +1,5 @@
 #include "rvcc.h"
+#include <stdio.h>
 
 //
 // 三、语义分析,生成代码
@@ -7,18 +8,20 @@
 static void gen_expr(Node *node);
 static void gen_stmt(Node *node);
 
+// 输出文件
+static FILE *OUTPUT_FILE;
+
 // 输出格式化字符串并换行
 static void println(char *fmt, ...) {
   va_list va;
 
   // 初始化 va 变量，fmt是最后一个固定参数
   va_start(va, fmt);
-  vprintf(fmt, va);
-
+  vfprintf(OUTPUT_FILE, fmt, va);
   // 清理 va 变量
   va_end(va);
 
-  printf("\n");
+  fprintf(OUTPUT_FILE, "\n");
 }
 
 // (1) 函数
@@ -446,7 +449,9 @@ static void emit_text(Object *prog) {
   }
 }
 
-void codegen(Object *prog) {
+void codegen(Object *prog, FILE *out) {
+  OUTPUT_FILE = out;
+
   // 计算每个 Function 中的局部变量偏移
   assign_local_val_offsets(prog);
 

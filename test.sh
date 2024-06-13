@@ -23,7 +23,7 @@ assert() {
 
   # 运行程序，传入期待值，将生成结果写入tmp.s汇编文件。
   # 如果运行不成功，则会执行exit退出。成功时会短路exit操作
-  echo $input | ./rvcc -o tmp.s - || exit
+  echo "$input" | ./rvcc -o tmp.s - || exit
   # 编译rvcc产生的汇编文件
   # gcc -o tmp tmp.s
   $RISCV/bin/riscv64-unknown-linux-gnu-gcc -static -o tmp tmp.s tmp2.o
@@ -274,6 +274,12 @@ assert 2 'int main() { return ({ 0; 1; 2; }); }'
 assert 1 'int main() { ({ 0; return 1; 2; }); return 3; }'
 assert 6 'int main() { return ({ 1; }) + ({ 2; }) + ({ 3; }); }'
 assert 3 'int main() { return ({ int x=3; x; }); }'
+
+# [43] 支持注释
+assert 2 'int main() { /* return 1; */
+             return 2; }'
+assert 2 'int main() { // return 1;
+             return 2; }'
 
 # 如果运行正常未提前退出，程序将显示OK
 echo OK

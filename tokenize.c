@@ -295,6 +295,24 @@ Token *tokenize(char *filename, char *p) {
   Token *cur = &head;
 
   while (*p) {
+    // 跳过行注释
+    if (starts_with(p, "//")) {
+      p += 2;
+      while (*p != '\n')
+        p++;
+      continue;
+    }
+
+    // 跳过块注释
+    if (starts_with(p, "/*")) {
+      // 在剩余字符串中寻找 "*/" 的位置
+      char *q = strstr(p + 2, "*/");
+      if (!q)
+        error_at(p, "unclosed block comment");
+      p = q + 2;
+      continue;
+    }
+
     // 跳过空白字符, \t \n
     if (isspace(*p)) {
       ++p;

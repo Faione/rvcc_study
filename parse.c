@@ -4,28 +4,85 @@
 // 二、语法分析， 生成AST
 //
 
+// 局部和全局变量的域
+typedef struct VarScope VarScope;
+struct VarScope {
+  VarScope *next; // 下一变量域
+  char *name;     // 变量域名称
+  Object *var;    // 对应的变量
+};
+
+// 代码块域
+typedef struct BlockScope BlockScope;
+struct BlockScope {
+  BlockScope *next; // 指向上一级的域
+  VarScope *vars;   // 指向当前域内的变量
+};
+
+// 所有域的链表
+static BlockScope *BLOCK_SCOPES = &(BlockScope){};
+
+/**
+ * 进入块域
+ *
+ * 进入一个域，则将此域以头插法插入到BLOCK_SCOPES中
+ */
+static void enter_scope(void) {
+  BlockScope *scope = calloc(1, sizeof(BlockScope));
+  scope->next = BLOCK_SCOPES;
+  BLOCK_SCOPES = scope;
+}
+
+/**
+ * 离开块域
+ *
+ * 移动BLOCK_SCOPES至上一个块域（链表头的next）
+ */
+static void leave_scope(void) { BLOCK_SCOPES = BLOCK_SCOPES->next; }
+
+/**
+ * 向块域插入变量
+ *
+ * @param name 变量域的名称
+ * @param var 要插入块域的变量
+ *
+ * @return 构造好的变量域
+ */
+static VarScope *push_scope(char *name, Object *var) {
+  VarScope *var_scope = calloc(1, sizeof(VarScope));
+  var_scope->name = name;
+  var_scope->var = var;
+
+  // 将变量域以头插法的形式插入到当前的块域中
+  var_scope->next = BLOCK_SCOPES->vars;
+  BLOCK_SCOPES->vars = var_scope;
+  return var_scope;
+}
+
+/**
+ * 在所有块域中搜索与 ident token 同名的变量
+ *
+ * @param token 要检索的变量所属的token
+ *
+ * @return 匹配到的变量，没有找到则返回NULL
+ */
+static Object *find_var_by_token(Token *token) {
+
+  // 从当前块域开始检索
+  for (BlockScope *scope = BLOCK_SCOPES; scope; scope = scope->next) {
+    // 遍历此块域的所有变量
+    for (VarScope *var_scope = scope->vars; var_scope;
+         var_scope = var_scope->next) {
+      if (equal(token, var_scope->name))
+        return var_scope->var;
+    }
+  }
+  return NULL;
+}
+
 // 变量实例均保存在全局的 LOCALS 链表中
 Object *LOCALS;
 Object *GLOBALS;
-
-// 寻找 LOCALS 中是否有与 ident token 同名的变量
-static Object *find_var_by_token(Token *token) {
-  for (Object *var = LOCALS; var; var = var->next) {
-    // 简单判断 -> 负载判断, 提升效率
-    if (strlen(var->name) == token->len &&
-        !strncmp(token->loc, var->name, token->len))
-      return var;
-  }
-
-  // 查找全局变量中是否有同名变量
-  for (Object *var = GLOBALS; var; var = var->next) {
-    if (strlen(var->name) == token->len &&
-        !strncmp(token->loc, var->name, token->len))
-      return var;
-  }
-
-  return NULL;
-}
 
 // 获取标识符字符串
 static char *get_ident(Token *token) {
@@ -47,10 +104,21 @@ static bool is_typename(Token *token) {
   return equal(token, "char") | equal(token, "int");
 }
 
+/**
+ * 创建新的变量
+ *
+ * @param name 变量的名称
+ * @param type 变量的类型
+ *
+ * @return 构造号的变量
+ */
 static Object *new_var(char *name, Type *type) {
   Object *var = calloc(1, sizeof(Object));
   var->name = name;
   var->type = type;
+
+  // 创建一个与变量名称相同的变量域，并插入到当前块域中
+  push_scope(name, var);
   return var;
 }
 
@@ -204,6 +272,13 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
   return NULL;
 }
 
+// 传入 Token** 与 Token*，
+// 前者作为结果，让调用者能够感知，后者则作为递归中传递的变量
+// 因此以下任何一个函数执行完毕之后
+// *rest 都必须指向待分析的下一个 token
+// 而参数 Token* 仅是值拷贝，对调用者来说不可感知
+#define PARSER_DEFINE(name) static Node *(name)(Token * *rest, Token * token)
+
 // program = (function_def | global_variable_def) *
 // function_def = declspec function
 // function = declspec declarator "{" compound_stmt*
@@ -241,13 +316,6 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
 //           | str
 //           | num
 // fncall = ident "(" (assign ("," assign)*)? ")"
-
-// 传入 Token** 与 Token*，
-// 前者作为结果，让调用者能够感知，后者则作为递归中传递的变量
-// 因此以下任何一个函数执行完毕之后
-// *rest 都必须指向待分析的下一个 token
-// 而参数 Token* 仅是值拷贝，对调用者来说不可感知
-#define PARSER_DEFINE(name) static Node *(name)(Token * *rest, Token * token)
 PARSER_DEFINE(declaration);
 PARSER_DEFINE(compound_stmt);
 PARSER_DEFINE(stmt);
@@ -378,6 +446,9 @@ PARSER_DEFINE(compound_stmt) {
   Node *cur = &head;
   Node *node = new_node(ND_BLOCK, token);
 
+  // 进入当前块域
+  enter_scope();
+
   while (!equal(token, "}")) {
     if (is_typename(token))
       cur->next = declaration(&token, token);
@@ -387,6 +458,9 @@ PARSER_DEFINE(compound_stmt) {
     // 构造 stmt AST 之后，进行 add_type
     add_type(cur);
   }
+
+  // 离开当前块域
+  leave_scope();
 
   node->body = head.next;
   *rest = token->next;

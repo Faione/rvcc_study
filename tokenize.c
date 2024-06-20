@@ -254,6 +254,8 @@ static char *read_string_literal_end(char *p) {
   for (; *p != '"'; p++) {
     if (*p == '\n' || *p == '\0') // 单行结尾
       error_at(start, "unclosed string literal");
+    if (*p == '\\') // 跳过转义符号，随后也会跳过待转义的字符
+      p++;
   }
 
   return p;

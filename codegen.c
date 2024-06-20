@@ -143,6 +143,9 @@ static void store(Type *type) {
 // 词法分析
 // 生成代码
 void gen_expr(Node *node) {
+  // .loc <文件编号> 行号
+  println("  .loc 1 %d", node->token->line);
+
   switch (node->kind) {
   case ND_NUM:
     // 若根节点为数字(叶子节点), 则只加载到 a0 寄存器中
@@ -264,6 +267,9 @@ void gen_expr(Node *node) {
 }
 
 static void gen_stmt(Node *node) {
+  // .loc <文件编号> 行号
+  println("  .loc 1 %d", node->token->line);
+
   switch (node->kind) {
   case ND_EXPR_STMT:
     gen_expr(node->lhs);
@@ -352,7 +358,7 @@ static void emit_data(Object *prog) {
     if (var->is_function)
       continue;
 
-    println("  # 数据段标签");
+    println("\n  # 数据段标签");
     println("  .data");
 
     // 判断变量是否有初始值

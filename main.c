@@ -1,4 +1,5 @@
 #include "rvcc.h"
+#include <stdio.h>
 
 static char *OUTPUT_PATH;
 static char *INPUT_PATH;
@@ -61,6 +62,10 @@ int main(int argc, char **argv) {
 
   // 3. 语义分析
   FILE *out = open_file(OUTPUT_PATH);
+
+  // 在汇编代码开头增加其他信息
+  // .file <文件编号> <文件名>
+  fprintf(out, ".file 1 \"%s\"\n", INPUT_PATH);
   codegen(prog, out);
 
   return 0;

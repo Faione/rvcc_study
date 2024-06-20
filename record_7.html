@@ -1,0 +1,513 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>record_7 - rvcc notes</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="record_1.html"><strong aria-hidden="true">1.</strong> record_1</a></li><li class="chapter-item expanded "><a href="record_2.html"><strong aria-hidden="true">2.</strong> record_2</a></li><li class="chapter-item expanded "><a href="record_3.html"><strong aria-hidden="true">3.</strong> record_3</a></li><li class="chapter-item expanded "><a href="record_4.html"><strong aria-hidden="true">4.</strong> record_4</a></li><li class="chapter-item expanded "><a href="record_5.html"><strong aria-hidden="true">5.</strong> record_5</a></li><li class="chapter-item expanded "><a href="record_6.html"><strong aria-hidden="true">6.</strong> record_6</a></li><li class="chapter-item expanded "><a href="record_7.html" class="active"><strong aria-hidden="true">7.</strong> record_7</a></li><li class="chapter-item expanded "><a href="record_8.html"><strong aria-hidden="true">8.</strong> record_8</a></li><li class="chapter-item expanded "><a href="record_9.html"><strong aria-hidden="true">9.</strong> record_9</a></li><li class="chapter-item expanded "><a href="record_10.html"><strong aria-hidden="true">10.</strong> record_10</a></li><li class="chapter-item expanded "><a href="record_11.html"><strong aria-hidden="true">11.</strong> record_11</a></li><li class="chapter-item expanded "><a href="record_12.html"><strong aria-hidden="true">12.</strong> record_12</a></li><li class="chapter-item expanded "><a href="record_13.html"><strong aria-hidden="true">13.</strong> record_13</a></li><li class="chapter-item expanded "><a href="record_14.html"><strong aria-hidden="true">14.</strong> record_14</a></li><li class="chapter-item expanded "><a href="record_15.html"><strong aria-hidden="true">15.</strong> record_15</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">rvcc notes</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="支持零参函数调用"><a class="header" href="#支持零参函数调用">支持零参函数调用</a></h1>
+<p>函数与变量类似，是一种新的节点 ND_FNCALL, 同时在 Node 中增加 func_name 成员，用来说明标识函数名称</p>
+<ul>
+<li>ident 现在也包括了 函数</li>
+<li>构造 ND_FNCALL node 时，需要为 node 添加 func_name</li>
+</ul>
+<h2 id="词法分析"><a class="header" href="#词法分析">词法分析</a></h2>
+<p>函数与变量都是 ident，因此词法分析部分无需增加逻辑</p>
+<h2 id="类型分析"><a class="header" href="#类型分析">类型分析</a></h2>
+<p>对于 ND_FNCALL，暂时将其 type 设置为 INT(假设返回值为数字)</p>
+<h2 id="语法分析"><a class="header" href="#语法分析">语法分析</a></h2>
+<p>增加推导式</p>
+<ul>
+<li>ident args? 即是函数声明</li>
+</ul>
+<pre><code>// primary = &quot;(&quot; expr &quot;)&quot; | ident args?｜ num
+// args = &quot;(&quot; &quot;)&quot;
+</code></pre>
+<p>primary 中更新下降式</p>
+<pre><code class="language-c">  // ident
+  if (token-&gt;kind == TK_IDENT) {
+    // ident args?
+    if (equal(token-&gt;next, &quot;(&quot;)) {
+      Node *node = new_node(ND_FNCALL, token);
+      node-&gt;func_name = strndup(token-&gt;loc, token-&gt;len);
+      *rest = skip(token-&gt;next-&gt;next, &quot;)&quot;);
+      return node;
+    }
+
+    // ident var
+    Object *var = find_var_by_token(token);
+    if (!var) // 变量在声明中定义，必须存在
+      error_token(token, &quot;undefined variable&quot;);
+
+    *rest = token-&gt;next;
+    return new_node_var(var, token);
+  }
+</code></pre>
+<h2 id="语义分析"><a class="header" href="#语义分析">语义分析</a></h2>
+<p>新的栈布局</p>
+<ul>
+<li>rv中使用 ra 作为 ret 应当加载到 pc 的地址</li>
+<li>调用函数时 call 会自动地将下一指令的地址加载到 ra 中，因此在每个函数的开头，都必须保存保存ra，使得即便自己运行中调用了函数，也不必担心覆盖调用者的 ra</li>
+</ul>
+<pre><code>// 栈布局
+//-------------------------------// sp
+//              ra
+//-------------------------------// ra = sp-8
+//              fp
+//-------------------------------// fp = sp-16
+//             变量
+//-------------------------------// sp = sp-16-StackSize
+//           表达式计算
+//-------------------------------//
+</code></pre>
+<p>case 处理</p>
+<pre><code>  case ND_FNCALL:
+    printf(&quot;  # 调用函数%s\n&quot;, node-&gt;func_name);
+    printf(&quot;  call %s\n&quot;, node-&gt;func_name);
+    return;
+</code></pre>
+<p>ra 保存与恢复</p>
+<pre><code class="language-c">  printf(&quot;  addi sp, sp, -16\n&quot;);
+  printf(&quot;  # 将ra压栈\n&quot;);
+  printf(&quot;  sd ra, 8(sp)\n&quot;);
+  ...
+  printf(&quot;  # 恢复fp、ra和sp\n&quot;);
+  printf(&quot;  ld fp, 0(sp)\n&quot;);
+  printf(&quot;  ld ra, 8(sp)\n&quot;);
+  printf(&quot;  addi sp, sp, 16\n&quot;);
+</code></pre>
+<h1 id="支持最多6个参数的函数调用"><a class="header" href="#支持最多6个参数的函数调用">支持最多6个参数的函数调用</a></h1>
+<p>rv中约定通过 <code>a0..a5</code> 6个寄存器来传递最多6个函数参数，在 call 一个多参数函数之前，需要将参数填入到 6 个寄存器中</p>
+<ul>
+<li>Node中增加 <code>Node *args</code> 成员指向AST中的多个参数</li>
+<li>语法中可能将另一个函数调用放置在参数位置上，此时应当首先 call 此函数，再将其值保存到对应位置的寄存器上，再call外层的函数</li>
+</ul>
+<p><img src="./images/call.svg" alt="call" /></p>
+<h2 id="语法分析-1"><a class="header" href="#语法分析-1">语法分析</a></h2>
+<p>推导式修改</p>
+<pre><code>// primary = &quot;(&quot; expr &quot;)&quot; | ident | fncall | num
+// fncall = ident &quot;(&quot; (assign (&quot;,&quot; assign)*)? &quot;)&quot;
+</code></pre>
+<p>fncall 构造逻辑</p>
+<pre><code class="language-c">// fncall = ident &quot;(&quot; (assign (&quot;,&quot; assign)*)? &quot;)&quot;
+PARSER_DEFINE(fncall) {
+  Token *start = token;
+  token = token-&gt;next-&gt;next;
+
+  Node head = {};
+  Node *cur = &amp;head;
+
+  // 构造参数
+  while (!equal(token, &quot;)&quot;)) {
+    if (cur != &amp;head)
+      token = skip(token, &quot;,&quot;);
+
+    cur-&gt;next = assign(&amp;token, token);
+    cur = cur-&gt;next;
+  }
+
+  Node *node = new_node(ND_FNCALL, start);
+  node-&gt;args = head.next;
+  node-&gt;func_name = strndup(start-&gt;loc, start-&gt;len);
+
+  // 跳过 &quot;)&quot;
+  *rest = skip(token, &quot;)&quot;);
+  return node;
+}
+</code></pre>
+<p>primary 处理</p>
+<pre><code class="language-c">  // ident
+  if (token-&gt;kind == TK_IDENT) {
+    // fncall
+    if (equal(token-&gt;next, &quot;(&quot;)) {
+      return fncall(rest, token);
+    }
+</code></pre>
+<h2 id="语义分析-1"><a class="header" href="#语义分析-1">语义分析</a></h2>
+<p>ND_FNCALL 代码生成逻辑修改</p>
+<ul>
+<li>参数都以 Node 形式按顺序保存在 args 成员中，因此首先顺序遍历 args, 并将每个 expr 的结果保存到栈上</li>
+<li>相关指令执行完毕后，所有参数必然按属性排列在栈上，因此弹栈并按反向顺序保存到寄存器中</li>
+</ul>
+<pre><code class="language-c">  case ND_FNCALL: {
+    int argc = 0;
+
+    // 遍历所有参数，并将参数逐个压入栈中
+    for (Node *arg = node-&gt;args; arg; arg = arg-&gt;next) {
+      gen_expr(arg);
+      push();
+      argc++;
+    }
+
+    // 上述指令执行完毕时，参数必然按顺序放置在栈上
+    // 反向弹栈
+    for (int i = argc - 1; i &gt;= 0; i--) {
+      pop(func_arg_regs[i]);
+    }
+
+    printf(&quot;  # 调用函数%s\n&quot;, node-&gt;func_name);
+    printf(&quot;  call %s\n&quot;, node-&gt;func_name);
+
+    return;
+  }
+</code></pre>
+<h1 id="支持零参函数定义"><a class="header" href="#支持零参函数定义">支持零参函数定义</a></h1>
+<p>支持零参函数则意味着编译器需要对多个函数进行支持</p>
+<ul>
+<li>以函数为粒度进行 parse</li>
+</ul>
+<p>修改 Function 结构体，增加 <code>next</code> 成员，将多个 Function 以链表的形式串起来，从而让代码支持多函数</p>
+<h2 id="词法分析-1"><a class="header" href="#词法分析-1">词法分析</a></h2>
+<p>使用类 C 语法，因此函数定义没有采用 <code>fn</code> 类似的关键字，而是根据模式是否复合 <code>ident ident ()</code> 来决定是否按函数进行解析，因此在词法分析处不必进行修改</p>
+<h2 id="类型分析-1"><a class="header" href="#类型分析-1">类型分析</a></h2>
+<p>增加 TY_FUNC 作为函数类型，与 PTR 类型相似的时，在 Type 结构体中增加 <code>ret_type</code> 成员，作为 函数类型 的返回值</p>
+<pre><code class="language-c">// 创建一个函数类型， 且返回值为ret_type
+Type *func_type(Type *ret_type) {
+  Type *type = calloc(1, sizeof(Type));
+  type-&gt;kind = TY_FUNC;
+  type-&gt;ret_type = ret_type;
+
+  return type;
+}
+</code></pre>
+<h2 id="语法分析-2"><a class="header" href="#语法分析-2">语法分析</a></h2>
+<p>推导式更新</p>
+<pre><code>// program = function*
+// function = declspec declarator &quot;{&quot; compoundStmt*
+// declspec = &quot;int&quot;
+// declarator = &quot;*&quot;* ident type_suf
+// type_suf = (&quot;(&quot; &quot;)&quot;)?
+</code></pre>
+<p>其中 type_suf 用来判断是函数还是变量</p>
+<pre><code class="language-c">// type_suf = (&quot;(&quot; &quot;)&quot;)?
+// Type *type 为基础类型(如 int)
+static Type *type_suf(Token **rest, Token *token, Type *type) {
+  if (equal(token, &quot;(&quot;)) { // 零参函数
+    *rest = skip(token-&gt;next, &quot;)&quot;);
+    return func_type(type);
+  }
+
+  *rest = token;
+  return type;
+}
+</code></pre>
+<p>同时增加的 function 推导包含了先前 parse 的逻辑，而 parse 需要支持多 Function</p>
+<pre><code class="language-c">// function = declspec declarator &quot;{&quot; compoundStmt*
+static Function *function(Token **rest, Token *token) {
+  // 返回值的基础类型
+  Type *type = declspec(&amp;token, token);
+
+  // type为函数类型
+  // 指向 return type, 同时判断指针
+  // type-&gt;token 指向了 ident 对应的 token
+  type = declarator(&amp;token, token, type);
+
+  // 清空局部变量
+  LOCALS = NULL;
+
+  Function *func = calloc(1, sizeof(Function));
+  func-&gt;name = get_ident(type-&gt;token);
+
+  token = skip(token, &quot;{&quot;);
+  func-&gt;body = compound_stmt(rest, token);
+  func-&gt;locals = LOCALS;
+  return func;
+}
+</code></pre>
+<h2 id="语义分析-2"><a class="header" href="#语义分析-2">语义分析</a></h2>
+<p>由于存在多个函数，因此在 call 与 return 的地方都要利用函数名进行区分, 因此在段标签生成上需要为每个函数单独进行处理</p>
+<ul>
+<li>assign_local_val_offsets 需要为每个函数处理</li>
+<li>使用一个全局的 CUR_FUNC 记录现在正在处理的函数</li>
+</ul>
+<h1 id="支持最多6个参数的函数定义"><a class="header" href="#支持最多6个参数的函数定义">支持最多6个参数的函数定义</a></h1>
+<p>扩展 Function 结构体，增加 <code>params</code> 字段表示形参</p>
+<ul>
+<li>形参 也是 Locals, 此处单独处理是因为函数调用时，params要进行单独赋值</li>
+</ul>
+<p>扩展 Type 结构体，增加 <code>params</code> 与 <code>next</code></p>
+<ul>
+<li>形参由多个 Type 组合而成(此时仅支持多个 TYPE_INT)</li>
+<li><code>next</code> 字段允许Type构成链表</li>
+<li><code>params</code> 作为 TY_FUNC 类型的扩充字段，指向形参链表头</li>
+</ul>
+<p><img src="./images/params.svg" alt="parmas" /></p>
+<h2 id="类型分析-2"><a class="header" href="#类型分析-2">类型分析</a></h2>
+<p>增加 <code>copy_type</code> 函数, 对栈上的 Type 进行浅拷贝</p>
+<pre><code>// 复制类型
+// 浅拷贝，仅复制栈上数据
+Type *copy_type(Type *type) {
+  Type *rlt = calloc(1, sizeof(Type));
+  *rlt = *type;
+
+  return rlt;
+}
+</code></pre>
+<p>允许对函数进行参数声明之后，需要在 <code>add_type</code> 逻辑中补充对于参数的类型构造</p>
+<pre><code>  // 访问所有参数以增加类型
+  for (Node *n = node-&gt;args; n; n = n-&gt;next)
+    add_type(n);
+</code></pre>
+<h2 id="语法分析-3"><a class="header" href="#语法分析-3">语法分析</a></h2>
+<p>推导式修改</p>
+<pre><code>// type_suf = (&quot;(&quot; func_params? &quot;)&quot;)?
+// func_params = param (&quot;,&quot; param)*
+// param = declspec declarator
+</code></pre>
+<p><code>type_suf</code> 逻辑变化</p>
+<ul>
+<li>为函数时，支持形参的解析，通过构造 Type 链表，构造形参链表，并存储到 TY_FUNC 类型的 Type 的 <code>params</code> 字段中</li>
+</ul>
+<pre><code class="language-c">// type_suf = (&quot;(&quot; func_params? &quot;)&quot;)?
+// func_params = param (&quot;,&quot; param)*
+// param = declspec declarator
+// Type *type 为基础类型(如 int)
+static Type *type_suf(Token **rest, Token *token, Type *type) {
+  if (equal(token, &quot;(&quot;)) { // 函数
+    token = token-&gt;next;
+
+    // 存储形参
+    Type head = {};
+    Type *cur = &amp;head;
+
+    while (!equal(token, &quot;)&quot;)) {
+      if (cur != &amp;head)
+        token = skip(token, &quot;,&quot;);
+
+      Type *base_type = declspec(&amp;token, token);
+      // 不可将 declspec 嵌套的原因是
+      // declarator 的前几个参数会先准备好，然后再调用 declspec
+      // 而因此导致的 token 变化无法被 declarator 感知
+      // 因此不能将 declspec 进行嵌套
+      Type *dec_type = declarator(&amp;token, token, base_type);
+
+      // dec_type 为局部变量，地址不会改变，因此每次都需要拷贝，否则链表就会成环
+      cur-&gt;next = copy_type(dec_type);
+      cur = cur-&gt;next;
+    }
+
+    // 将参数加入到函数 Type 中
+    type = func_type(type);
+    type-&gt;params = head.next;
+
+    *rest = token-&gt;next;
+    return type;
+  }
+
+  *rest = token;
+  return type;
+}
+</code></pre>
+<p>function 逻辑中，在构造 comp stmt 之前(生成函数中 LOCALS之前), 将形参加入其中，并从 Type 生成 Object, 保存到 <code>func-&gt;params</code> 字段</p>
+<ul>
+<li>头插保证了每次 LOCALS 更新后，LOCALS 链表头都会变, 因此在 <code>构造 comp stmt</code> 前后， LOCALS值是不同的</li>
+</ul>
+<pre><code class="language-c">// 递归地将函数形参加入到 Local 中
+static void insert_param_to_locals(Type *param) {
+  if (param) {
+    insert_param_to_locals(param-&gt;next);
+    new_local_var(get_ident(param-&gt;token), param);
+  }
+}
+
+
+  insert_param_to_locals(type-&gt;params);
+  func-&gt;params = LOCALS;
+</code></pre>
+<h2 id="语义分析-3"><a class="header" href="#语义分析-3">语义分析</a></h2>
+<p>增加对形参的赋值, 即从约定好的寄存器中，将值拷贝到形参对应的内存地址上</p>
+<pre><code class="language-c">    int i = 0;
+    for (Object *var = f-&gt;params; var; var = var-&gt;next) {
+      printf(&quot;  # 将%s寄存器的值存入%s的栈地址\n&quot;, func_arg_regs[i], var-&gt;name);
+      printf(&quot;  sd %s, %d(fp)\n&quot;, func_arg_regs[i++], var-&gt;offset);
+    }
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="record_6.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="record_8.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="record_6.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="record_8.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

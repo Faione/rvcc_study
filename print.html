@@ -1,0 +1,2504 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>rvcc notes</title>
+        <meta name="robots" content="noindex" />
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="record_1.html"><strong aria-hidden="true">1.</strong> record_1</a></li><li class="chapter-item expanded "><a href="record_2.html"><strong aria-hidden="true">2.</strong> record_2</a></li><li class="chapter-item expanded "><a href="record_3.html"><strong aria-hidden="true">3.</strong> record_3</a></li><li class="chapter-item expanded "><a href="record_4.html"><strong aria-hidden="true">4.</strong> record_4</a></li><li class="chapter-item expanded "><a href="record_5.html"><strong aria-hidden="true">5.</strong> record_5</a></li><li class="chapter-item expanded "><a href="record_6.html"><strong aria-hidden="true">6.</strong> record_6</a></li><li class="chapter-item expanded "><a href="record_7.html"><strong aria-hidden="true">7.</strong> record_7</a></li><li class="chapter-item expanded "><a href="record_8.html"><strong aria-hidden="true">8.</strong> record_8</a></li><li class="chapter-item expanded "><a href="record_9.html"><strong aria-hidden="true">9.</strong> record_9</a></li><li class="chapter-item expanded "><a href="record_10.html"><strong aria-hidden="true">10.</strong> record_10</a></li><li class="chapter-item expanded "><a href="record_11.html"><strong aria-hidden="true">11.</strong> record_11</a></li><li class="chapter-item expanded "><a href="record_12.html"><strong aria-hidden="true">12.</strong> record_12</a></li><li class="chapter-item expanded "><a href="record_13.html"><strong aria-hidden="true">13.</strong> record_13</a></li><li class="chapter-item expanded "><a href="record_14.html"><strong aria-hidden="true">14.</strong> record_14</a></li><li class="chapter-item expanded "><a href="record_15.html"><strong aria-hidden="true">15.</strong> record_15</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">rvcc notes</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="一元运算符"><a class="header" href="#一元运算符">一元运算符</a></h1>
+<p>一元运算符(只有一个操作数), 如 +1，-1</p>
+<ul>
+<li>支持一元运算符号即拓展 primary 的内容，即存在 unary = （&quot;+&quot; | &quot;-&quot;）unary | primary</li>
+</ul>
+<p>注意，+ 一元运算符不会对结果有任何影响，因此实现时，仅需考虑 - , 故语法分析遇到一元运算符 + 跳过即可</p>
+<h2 id="词法分析"><a class="header" href="#词法分析">词法分析</a></h2>
+<p>+/-本身能够识别，无需增加</p>
+<h2 id="语法分析"><a class="header" href="#语法分析">语法分析</a></h2>
+<p>新的算式形式语言</p>
+<ul>
+<li>mul 之后的 + | - 被认为是常规运算符</li>
+</ul>
+<pre><code>// expr = mul (&quot;+&quot; mul | &quot;-&quot; mul)*
+// mul = unary (&quot;*&quot; unary | &quot;/&quot; unary)*
+// unary = (&quot;+&quot; | &quot;-&quot;) unary | primary
+// primary = &quot;(&quot; expr &quot;)&quot; | num
+</code></pre>
+<pre><code class="language-c">// unary = (&quot;+&quot; | &quot;-&quot;) unary | primary
+static Node *unary(Token **rest, Token *token) {
+  // + 一元运算符无影响，跳过即可
+  // unary无论如何都会调用 primary 进行 rest 的设置
+  // 因此递归调用 unary 时，传入 rest 即可
+  // 否则则需要在最后手动设置 rest
+  if (equal(token, &quot;+&quot;)) {
+    return unary(rest, token-&gt;next);
+  }
+
+  if (equal(token, &quot;-&quot;)) {
+    return new_node_unary(ND_NEG, unary(rest, token-&gt;next));
+  }
+
+  return primary(rest, token);
+}
+</code></pre>
+<h2 id="语义分析"><a class="header" href="#语义分析">语义分析</a></h2>
+<p>对于 ND_NEG 节点，递归直到遇到数字，将数字加载到 a0 之后，增加<code>-</code>数量的 neg 指令即可</p>
+<pre><code class="language-c">static void gen_code(Node *node) {
+  // 若根节点为数字(叶子节点), 则只加载到 a0 寄存器中
+  if (node-&gt;kind == ND_NUM) {
+  }
+  switch (node-&gt;kind) {
+  case ND_NUM:
+    printf(&quot;  li a0, %d\n&quot;, node-&gt;val);
+    return;
+  case ND_NEG:
+    // 一元运算符子为单臂二叉树，子节点保留在右侧
+    // 因此向右递归直到遇到数字
+    gen_code(node-&gt;rhs);
+    printf(&quot;  neg a0, a0\n&quot;);
+    return;
+  default:
+    break;
+  }
+</code></pre>
+<h2 id="关系运算符"><a class="header" href="#关系运算符">关系运算符</a></h2>
+<p>支持 <code>==</code> <code>!=</code> <code>&lt;=</code> <code>&gt;=</code></p>
+<h2 id="词法分析-1"><a class="header" href="#词法分析-1">词法分析</a></h2>
+<p>增加<code>read_punct</code>函数，读取运算符并返回长度</p>
+<pre><code class="language-c">int punct_len = read_punct(p);
+if (punct_len) {
+    cur-&gt;next = new_token(TK_PUNCT, p, p + punct_len);
+    cur = cur-&gt;next;
+
+    p += punct_len;
+    continue;
+}
+</code></pre>
+<h2 id="语法分析-1"><a class="header" href="#语法分析-1">语法分析</a></h2>
+<p>表达式形式语言修改</p>
+<pre><code>// expr = equality
+// equality = relational (&quot;==&quot; relational | &quot;!=&quot; relational)*
+// relational = add (&quot;&lt;&quot; add | &quot;&lt;=&quot; add | &quot;&gt;&quot; add | &quot;&gt;=&quot; add)*
+// add = mul (&quot;+&quot; mul | &quot;-&quot; mul)*
+// mul = unary (&quot;*&quot; unary | &quot;/&quot; unary)*
+// unary = (&quot;+&quot; | &quot;-&quot;) unary | primary
+// primary = &quot;(&quot; expr &quot;)&quot; | num
+</code></pre>
+<p>因此需要增加 equality 与 relational</p>
+<ul>
+<li>存在 ND_LT 和 ND_NE 存在的情况下，不需要 ND_GT 和 ND_GE, 因为 lhs 和 rhs 位置就代表了一种意义</li>
+</ul>
+<pre><code class="language-c">  while (true) {
+    if (equal(token, &quot;==&quot;)) {
+      node = new_node_bin(ND_EQ, node, relational(&amp;token, token-&gt;next));
+      continue;
+    }
+
+    if (equal(token, &quot;!=&quot;)) {
+      node = new_node_bin(ND_NE, node, relational(&amp;token, token-&gt;next));
+      continue;
+    }
+    break;
+  }
+</code></pre>
+<h2 id="语义分析-1"><a class="header" href="#语义分析-1">语义分析</a></h2>
+<p>使用 <code>xor</code>, <code>seqz</code>, <code>snez</code>, <code>slt</code>, <code>xori</code> 指令来实现比较</p>
+<ul>
+<li><code>xor</code> 若两数相等，则值为 0, 因此可以通过判断是否为0来判断是否相等, 利用 seqz 与 snez 指令</li>
+<li><code>slt</code> 判断是否小于, 小于等于则等同于不大于，利用 slt 与取反来实现</li>
+</ul>
+<pre><code class="language-C">case ND_EQ:
+case ND_NE:
+  printf(&quot;  xor a0, a0 ,a1\n&quot;);
+  if (node-&gt;kind == ND_EQ) {
+    // a0 = 1 if a0 = 0
+    printf(&quot;  seqz a0, a0\n&quot;);
+  } else {
+    // a0 = 1 if a0 != 0
+    printf(&quot;  snez a0, a0\n&quot;);
+  }
+  return;
+case ND_LT:
+  printf(&quot;  slt a0, a0, a1\n&quot;);
+  return;
+case ND_LE:
+  // a0 &lt;= a1 == !(a1 &lt; a0) == (a1 &lt; a0) xor 1
+  printf(&quot;  slt a0, a1, a0\n&quot;);
+  printf(&quot;  xori a0, a0, 1\n&quot;);
+  return;
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="支持多段"><a class="header" href="#支持多段">支持多段</a></h1>
+<p>支持 <code>;</code> 分割多段表达式，每段都编译，执行时只有最后一段结果保留</p>
+<p><img src="./images/stmt.svg" alt="stmt" /></p>
+<h2 id="词法分析-2"><a class="header" href="#词法分析-2">词法分析</a></h2>
+<p><code>;</code> 包含在标点符号中，不必修改</p>
+<h2 id="语法分析-2"><a class="header" href="#语法分析-2">语法分析</a></h2>
+<p>在原有的语法树的基础上，扩充对多个语段的支持， 在 Node 结构体中增加 <code>next</code> 字段, 指向不同的语段</p>
+<pre><code class="language-c">struct Node {
+  NodeKind kind;
+  Node *next;
+  Node *lhs;
+  Node *rhs;
+  int val;
+};
+</code></pre>
+<p>更新形式语言</p>
+<pre><code>// program = stmt*
+// stmt = expr_stmt
+// expr_stmt = expr &quot;;&quot;
+// expr = equality
+// equality = relational (&quot;==&quot; relational | &quot;!=&quot; relational)*
+// relational = add (&quot;&lt;&quot; add | &quot;&lt;=&quot; add | &quot;&gt;&quot; add | &quot;&gt;=&quot; add)*
+// add = mul (&quot;+&quot; mul | &quot;-&quot; mul)*
+// mul = unary (&quot;*&quot; unary | &quot;/&quot; unary)*
+// unary = (&quot;+&quot; | &quot;-&quot;) unary | primary
+// primary = &quot;(&quot; expr &quot;)&quot; | num
+</code></pre>
+<p><code>expr_stmt</code>中将语法树挂载 <code>rhs</code>上</p>
+<pre><code>static Node *expr_stmt(Token **rest, Token *token) {
+  Node *node = new_node_unary(ND_EXPR_STMT, expr(&amp;token, token));
+  *rest = skip(token, &quot;;&quot;);
+  return node;
+}
+</code></pre>
+<p>stmt 节点的 next 指向下一个 stmt</p>
+<pre><code class="language-c">Node *parse(Token *token) {
+  Node head = {};
+  Node *cur = &amp;head;
+  while (token-&gt;kind != TK_EOF) {
+    cur-&gt;next = stmt(&amp;token, token);
+    cur = cur-&gt;next;
+  };
+  return head.next;
+}
+</code></pre>
+<h2 id="语义分析-2"><a class="header" href="#语义分析-2">语义分析</a></h2>
+<p>增加对于 ND_EXPR_STMT 类型的 Node 的解析</p>
+<pre><code class="language-c">static void gen_stmt(Node *node) {
+  if (node-&gt;kind == ND_EXPR_STMT) {
+    gen_expr(node-&gt;rhs);
+    return;
+  }
+
+  error(&quot;invalid statement&quot;);
+}
+
+void codegen(Node *node) {
+  printf(&quot;  .globl main\n&quot;);
+  printf(&quot;main:\n&quot;);
+
+  for (Node *n = node; n; n = n-&gt;next) {
+    gen_stmt(n);
+    assert(STACK_DEPTH == 0);
+  }
+
+  printf(&quot;  ret\n&quot;);
+}
+
+</code></pre>
+<h1 id="支持单字母本地变量"><a class="header" href="#支持单字母本地变量">支持单字母本地变量</a></h1>
+<p>本地变量是一种新的token，需要增加token种类
+本地变量代表的是内存地址，支持单字母本地变量需要为变量计算内存地址
+变量是一种新的节点，赋值语句是一种新的语法，需要增加赋值语句节点
+赋值是一种新的语法，需要新的语义分析，同时还需要支持 <code>a=b=c=1</code>的递归赋值</p>
+<p><img src="./images/assign.svg" alt="Alt text" /></p>
+<h2 id="词法分析-3"><a class="header" href="#词法分析-3">词法分析</a></h2>
+<p>单字母对应[a,z], 增加相应的字符判断即可，同时增加 <code>ident</code> token种类</p>
+<h2 id="语法分析-3"><a class="header" href="#语法分析-3">语法分析</a></h2>
+<p>更新形式语言</p>
+<pre><code>// program = stmt*
+// stmt = expr_stmt
+// expr_stmt = expr &quot;;&quot;
+// expr = assign
+// assign = equality (&quot;=&quot; assign)?
+// equality = relational (&quot;==&quot; relational | &quot;!=&quot; relational)*
+// relational = add (&quot;&lt;&quot; add | &quot;&lt;=&quot; add | &quot;&gt;&quot; add | &quot;&gt;=&quot; add)*
+// add = mul (&quot;+&quot; mul | &quot;-&quot; mul)*
+// mul = unary (&quot;*&quot; unary | &quot;/&quot; unary)*
+// unary = (&quot;+&quot; | &quot;-&quot;) unary | primary
+// primary = &quot;(&quot; expr &quot;)&quot; | ident｜ num
+</code></pre>
+<p>递归 assign 实现</p>
+<pre><code class="language-c">// assign = equality (&quot;=&quot; assign)?
+static Node *assign(Token **rest, Token *token) {
+  Node *node = equality(&amp;token, token);
+
+  // a=b=1;
+  if (equal(token, &quot;=&quot;))
+    node = new_node_bin(ND_ASSIGN, node, assign(&amp;token, token-&gt;next));
+  *rest = token;
+  return node;
+}
+
+primary 中增加对于 ident 解析
+</code></pre>
+<h2 id="语义分析-3"><a class="header" href="#语义分析-3">语义分析</a></h2>
+<p>栈布局</p>
+<pre><code>//-------------------------------// sp
+//              fp                  fp = sp-8
+//-------------------------------// fp
+//              'a'                 fp-8
+//              'b'                 fp-16
+//              ...
+//              'z'                 fp-208
+//-------------------------------// sp=sp-8-208
+//           表达式计算
+//-------------------------------//
+</code></pre>
+<p>地址计算</p>
+<pre><code class="language-c">// 计算给定节点的内存地址
+static void gen_addr(Node *node) {
+  if (node-&gt;kind == ND_VAR) {
+    int offset = (node-&gt;name - 'a') * 8;
+    printf(&quot;  addi a0, fp, %d\n&quot;, -offset);
+    return;
+  }
+
+  error(&quot;not an lvalue&quot;);
+}
+</code></pre>
+<p>assign 语义</p>
+<pre><code class="language-c">  case ND_ASSIGN:
+    // 左值
+    gen_addr(node-&gt;lhs);
+    push();
+    // 右值
+    gen_expr(node-&gt;rhs);
+    // 栈上保存的是左值内存地址, 弹出到 a1 寄存器
+    pop(&quot;a1&quot;);
+    printf(&quot;  sd a0, 0(a1)\n&quot;);
+    return;
+</code></pre>
+<p>同时也增加了 sp 与 fp 的保存与恢复</p>
+<pre><code class="language-c">printf(&quot;  addi sp, sp, -8\n&quot;);
+printf(&quot;  sd fp, 0(sp)\n&quot;);
+// 将当前的 sp 设置为 fp
+printf(&quot;  mv fp, sp\n&quot;);
+
+// 恢复 sp
+printf(&quot;  mv sp, fp\n&quot;);
+// 恢复上一个 fp
+printf(&quot;  ld fp, 0(sp)\n&quot;);
+printf(&quot;  addi sp, sp, 8\n&quot;);
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="支持多字母本地变量"><a class="header" href="#支持多字母本地变量">支持多字母本地变量</a></h1>
+<p>本地变量名称满足 <code>[a-zA-Z_][a-zA-Z0-9_]*</code></p>
+<ul>
+<li>增加 Object 结构体用来保存本地变量</li>
+<li>增加 Function 结构体用来指示代码</li>
+</ul>
+<pre><code class="language-c">struct Object {
+  Object *next;
+  char *name; // 变量名称
+  int offset; // 相对栈顶的偏移量
+};
+
+struct Function {
+  Node *body;     // 函数体(AST)
+  Object *locals; // 本地变量链表头
+  int stack_size; // 栈大小
+};
+</code></pre>
+<h2 id="词法分析-4"><a class="header" href="#词法分析-4">词法分析</a></h2>
+<p>首先需要判断字符是否为 变量名称头，其次还要判断剩余部分是否符合剩余部分的规范，最后再构成token</p>
+<h2 id="语法分析-4"><a class="header" href="#语法分析-4">语法分析</a></h2>
+<p>parse返回值变为 Funcion， 因此需要生成好 body 与 locals</p>
+<ul>
+<li>生成 body 的逻辑几乎无变化</li>
+<li>locals 在生成的过程中变化，下降到 primary 时，如发现是一个 ident token，则首先遍历 locals 中是否已经有同名 Node， 否则则创建一个并加入到 locals 中</li>
+</ul>
+<pre><code class="language-c">// 变量实例均保存在全局的 LOCALS 链表中
+Object *LOCALS;
+
+// 创建以 Local 变量，并头插到 LOCALS 中
+static Object *new_local_var(char *name) {
+  Object *var = calloc(1, sizeof(Object));
+  var-&gt;name = name;
+
+  // 头插法
+  var-&gt;next = LOCALS;
+  LOCALS = var;
+  return var;
+}
+
+// 寻找 LOCALS 中是否有与 ident token 同名的变量
+static Object *find_var_by_token(Token *token) {
+  for (Object *var = LOCALS; var; var = var-&gt;next) {
+    // 简单判断 -&gt; 负载判断, 提升效率
+    if (strlen(var-&gt;name) == token-&gt;len &amp;&amp;
+        !strncmp(token-&gt;loc, var-&gt;name, token-&gt;len))
+      return var;
+  }
+
+  return NULL;
+}
+</code></pre>
+<h2 id="语义分析-4"><a class="header" href="#语义分析-4">语义分析</a></h2>
+<p>更新后的栈布局</p>
+<pre><code>  // 栈布局
+  //-------------------------------// sp
+  //              fp
+  //-------------------------------// fp = sp-8
+  //             变量
+  //-------------------------------// sp = sp-8-StackSize
+  //           表达式计算
+  //-------------------------------//
+</code></pre>
+<p>为 prog 中的变量设置栈空间</p>
+<pre><code class="language-c">static void assign_local_val_offsets(Function *prog) {
+  int offset = 0;
+  for (Object *var = prog-&gt;locals; var; var = var-&gt;next) {
+    offset += 8;
+    var-&gt;offset = -offset;
+  }
+
+  prog-&gt;stack_size = align_to(offset, 16);
+}
+
+// 计算给定节点的内存地址
+static void gen_addr(Node *node) {
+  // var 为指针，在 prog 中被修改后，同时也保存在 Node 中
+  if (node-&gt;kind == ND_VAR) {
+    printf(&quot;  addi a0, fp, %d\n&quot;, node-&gt;var-&gt;offset);
+    return;
+  }
+
+  error(&quot;not an lvalue&quot;);
+}
+</code></pre>
+<blockquote>
+<p>注意 <code>#define _POSIX_C_SOURCE 200809L</code>, 才能够正常使用 <code>strndup</code> 函数</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="支持-return"><a class="header" href="#支持-return">支持 return</a></h1>
+<p><img src="./images/return.svg" alt="return" /></p>
+<h2 id="词法分析-5"><a class="header" href="#词法分析-5">词法分析</a></h2>
+<p>return 作为一种特殊的 ident，在完成token的初步生成之后，再对符合 keyword 的token 进行标记</p>
+<pre><code class="language-c">// 将符合关键字的 token 类型修改为 TK_KEYWORD
+static void convert_keywords(Token *token) {
+  for (Token *t = token; t; t = t-&gt;next) {
+    if (equal(t, &quot;return&quot;)) {
+      t-&gt;kind = TK_KEYWORD;
+    }
+  }
+}
+</code></pre>
+<h2 id="语法分析-5"><a class="header" href="#语法分析-5">语法分析</a></h2>
+<p>形式语言中修改 stmt 的表达， 注意  <code> &quot;return&quot; expr &quot;;&quot;</code> 与 <code>expr_stmt</code> 位于统一级别</p>
+<pre><code>// stmt =  &quot;return&quot; expr &quot;;&quot;| expr_stmt
+</code></pre>
+<p>增加一个 return node，return stmt </p>
+<pre><code>static Node *stmt(Token **rest, Token *token) {
+
+  if (token-&gt;kind == TK_KEYWORD &amp;&amp; equal(token, &quot;return&quot;)) {
+    Node *node = new_node_unary(ND_RETURN, expr(&amp;token, token-&gt;next));
+    *rest = skip(token, &quot;;&quot;);
+    return node;
+  }
+
+  return expr_stmt(rest, token);
+}
+</code></pre>
+<h2 id="语义分析-5"><a class="header" href="#语义分析-5">语义分析</a></h2>
+<p>在程序末尾增一个 return 标签，而 return node 则会跳转到此 label</p>
+<pre><code class="language-c">static void gen_stmt(Node *node) {
+  if (node-&gt;kind == ND_EXPR_STMT) {
+    gen_expr(node-&gt;rhs);
+    return;
+  }
+
+  switch (node-&gt;kind) {
+  case ND_EXPR_STMT:
+    gen_expr(node-&gt;rhs);
+    return;
+  case ND_RETURN:
+    gen_expr(node-&gt;rhs);
+    printf(&quot;  j .L.return\n&quot;);
+    return;
+  default:
+    break;
+  }
+
+  error(&quot;invalid statement&quot;);
+}
+</code></pre>
+<h1 id="支持代码块"><a class="header" href="#支持代码块">支持代码块</a></h1>
+<p><img src="./images/codeblock.svg" alt="Alt text" /></p>
+<h2 id="词法分析-6"><a class="header" href="#词法分析-6">词法分析</a></h2>
+<p><code>{ | }</code> 本身就是符号，无需进行修改</p>
+<h2 id="语法分析-6"><a class="header" href="#语法分析-6">语法分析</a></h2>
+<p>增加 <code>ND_Block</code> 节点，修改推导式，同时约定每个 Funcion 必须从 ND_Block 开始</p>
+<pre><code>// program = &quot;{&quot; compoundStmt
+// compoundStmt = stmt* &quot;}&quot;
+// stmt = &quot;return&quot; expr &quot;;&quot;| &quot;{&quot; compoundStmt | expr_stmt
+
+</code></pre>
+<p>增加 ND_Block 的处理</p>
+<pre><code class="language-c">// compoundStmt = stmt* &quot;}&quot;
+PARSER_DEFINE(compound_stmt) {
+  Node head = {};
+  Node *cur = &amp;head;
+  while (!equal(token, &quot;}&quot;)) {
+    cur-&gt;next = stmt(&amp;token, token);
+    cur = cur-&gt;next;
+  }
+
+  Node *node = new_node(ND_BLOCK);
+  node-&gt;body = head.next;
+  *rest = token-&gt;next;
+  return node;
+}
+
+// stmt = &quot;return&quot; expr &quot;;&quot;| &quot;{&quot; compoundStmt | expr_stmt
+PARSER_DEFINE(stmt) {
+
+  if (token-&gt;kind == TK_KEYWORD &amp;&amp; equal(token, &quot;return&quot;)) {
+    Node *node = new_node_unary(ND_RETURN, expr(&amp;token, token-&gt;next));
+    *rest = skip(token, &quot;;&quot;);
+    return node;
+  }
+
+  if (equal(token, &quot;{&quot;)) {
+    return compound_stmt(rest, token-&gt;next);
+  }
+
+  return expr_stmt(rest, token);
+}
+</code></pre>
+<h2 id="语义分析-6"><a class="header" href="#语义分析-6">语义分析</a></h2>
+<p>ND_Block 也是 stmt， 同时也可以嵌套</p>
+<pre><code>static void gen_stmt(Node *node) {
+  switch (node-&gt;kind) {
+  case ND_EXPR_STMT:
+    gen_expr(node-&gt;rhs);
+    return;
+  case ND_RETURN:
+    gen_expr(node-&gt;rhs);
+    printf(&quot;  j .L.return\n&quot;);
+    return;
+  case ND_BLOCK:
+    for (Node *n = node-&gt;body; n; n = n-&gt;next) {
+      gen_stmt(n);
+    }
+    return;
+  default:
+    break;
+  }
+
+  error(&quot;invalid statement&quot;);
+}
+</code></pre>
+<h1 id="允许空语句"><a class="header" href="#允许空语句">允许空语句</a></h1>
+<h2 id="词法分析-7"><a class="header" href="#词法分析-7">词法分析</a></h2>
+<p>允许 expr 为空</p>
+<pre><code>// expr_stmt = expr? &quot;;&quot;
+</code></pre>
+<p>发现空 stmt 时，返回空 ND_BLOCK 即可</p>
+<pre><code>PARSER_DEFINE(expr_stmt) {
+  if (equal(token, &quot;;&quot;)) {
+    *rest = token-&gt;next;
+    return new_node(ND_BLOCK);
+  }
+
+  Node *node = new_node_unary(ND_EXPR_STMT, expr(&amp;token, token));
+  *rest = skip(token, &quot;;&quot;);
+  return node;
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="支持-if-语句"><a class="header" href="#支持-if-语句">支持 if 语句</a></h1>
+<h2 id="词法分析-8"><a class="header" href="#词法分析-8">词法分析</a></h2>
+<p>增加 <code>if</code> 关键字</p>
+<pre><code class="language-c">static char *keywords[] = {&quot;return&quot;, &quot;if&quot;, &quot;else&quot;};
+
+// 判断 ident token 是否在 keywords 中
+static bool is_keyword(Token *token) {
+  for (int i = 0; i &lt; sizeof(keywords) / sizeof(*keywords); i++) {
+    if (equal(token, keywords[i])) {
+      return true;
+    }
+  }
+
+  return false;
+}
+</code></pre>
+<h2 id="语法分析-7"><a class="header" href="#语法分析-7">语法分析</a></h2>
+<p>推导式增加</p>
+<pre><code>// stmt = &quot;return&quot; expr &quot;;&quot;|
+//        &quot;{&quot; compoundStmt |
+//        expr_stmt |
+//        &quot;if&quot; &quot;(&quot; expr &quot;)&quot; stmt (&quot;else&quot; stmt)?
+</code></pre>
+<p>增加 node_if， 并扩充 Node 中的成员 cond, then, else</p>
+<pre><code class="language-c">  // 解析 if 语句
+  if (equal(token, &quot;if&quot;)) {
+    Node *node = new_node(ND_IF);
+    token = skip(token-&gt;next, &quot;(&quot;);
+    node-&gt;cond = expr(&amp;token, token);
+    token = skip(token, &quot;)&quot;);
+    node-&gt;then = stmt(&amp;token, token);
+    if (equal(token, &quot;else&quot;))
+      node-&gt;els = stmt(&amp;token, token);
+    *rest = token;
+    return node;
+  }
+</code></pre>
+<h2 id="语义分析-7"><a class="header" href="#语义分析-7">语义分析</a></h2>
+<p>对于 ND_IF 的节点，汇编的模板格式如下, 首先生成 condition expr, 随后插入一条 <code>beqz</code> 指令判断是否要跳转到 else</p>
+<pre><code>//   condition expr
+//   beqz to else label
+//   then stmt
+// else label:
+//   else stmt
+// end label:
+</code></pre>
+<p>当存在多个 if 时， 需要通过 c 标记来区别不同的label</p>
+<pre><code class="language-c">  case ND_IF: {
+    int c = count();
+
+    // condition
+    gen_expr(node-&gt;cond);
+    // a0为0则跳转到 else
+    printf(&quot;  beqz a0, .L.else.%d\n&quot;, c);
+
+    // then 逻辑
+    gen_stmt(node-&gt;then);
+    // 跳转到 if 语句末尾
+    printf(&quot;  j .L.end.%d\n&quot;, c);
+
+    // else 逻辑
+    printf(&quot;.L.else.%d:\n&quot;, c);
+    if (node-&gt;els)
+      gen_stmt(node-&gt;els);
+    // end 标签
+    printf(&quot;.L.end.%d:\n&quot;, c);
+    return;
+</code></pre>
+<h2 id="支持-for-语句"><a class="header" href="#支持-for-语句">支持 for 语句</a></h2>
+<p><strong>词法分析</strong></p>
+<p>增加 for 关键字</p>
+<h2 id="语法分析-8"><a class="header" href="#语法分析-8">语法分析</a></h2>
+<p>推导式增加</p>
+<p>增加 node_for， 并扩充 Node 中的成员 init, inc, 即 for init cond inc</p>
+<h2 id="语义分析-8"><a class="header" href="#语义分析-8">语义分析</a></h2>
+<p>对于 ND_FOR 的节点，汇编的模板格式如下</p>
+<pre><code>//   init stmt
+// begin label:
+//   condition expr
+//   beqz to end label
+//   then stmt
+//   inc expr
+//   j to cond label
+// end label:
+</code></pre>
+<h2 id="支持-while-语句"><a class="header" href="#支持-while-语句">支持 while 语句</a></h2>
+<p>while 语句就是只用 cond 和 then 的 for 循环语句</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="支持一元运算"><a class="header" href="#支持一元运算">支持一元&amp;*运算</a></h1>
+<p><img src="./images/addr.svg" alt="addr" /></p>
+<h2 id="词法分析-9"><a class="header" href="#词法分析-9">词法分析</a></h2>
+<p>支持 <code>*</code> <code>&amp;</code> 两种符号， 而考虑到 tokenize 本身就能够解析符号，因此不必在 tokenize 阶段做修改</p>
+<h2 id="语法分析-9"><a class="header" href="#语法分析-9">语法分析</a></h2>
+<p>与 <code>-</code> 类似，单臂节点中增加了 <code>*</code> <code>&amp;</code> 两种类型的节点， 因此推导式修改为</p>
+<pre><code>// unary = (&quot;+&quot; | &quot;-&quot; | &quot;*&quot; | &quot;&amp;&quot;) unary | primary
+</code></pre>
+<p>相应地在 unary 中也要增加处理逻辑</p>
+<pre><code class="language-c">// unary = (&quot;+&quot; | &quot;-&quot; | &quot;*&quot; | &quot;&amp;&quot;) unary | primary
+PARSER_DEFINE(unary) {
+  // + 一元运算符无影响，跳过即可
+  // unary无论如何都会调用 primary 进行 rest 的设置
+  // 因此递归调用 unary 时，传入 rest 即可
+  // 否则则需要在每次生成新节点后，手动地再设置 rest
+
+  // &quot;+&quot; unary
+  if (equal(token, &quot;+&quot;))
+    return unary(rest, token-&gt;next);
+
+  // &quot;+&quot; unary
+  if (equal(token, &quot;-&quot;))
+    return new_node_unary(ND_NEG, unary(rest, token-&gt;next), token);
+
+  // &quot;*&quot; unary
+  if (equal(token, &quot;*&quot;))
+    return new_node_unary(ND_DEREF, unary(rest, token-&gt;next), token);
+
+  // &quot;&amp;&quot; unary
+  if (equal(token, &quot;&amp;&quot;))
+    return new_node_unary(ND_ADDR, unary(rest, token-&gt;next), token);
+
+  return primary(rest, token);
+}
+</code></pre>
+<h2 id="语义分析-9"><a class="header" href="#语义分析-9">语义分析</a></h2>
+<p>与 ND_NEG 类似，DEREF 和 ADDR 都在 expr 中进行单独处理</p>
+<ul>
+<li>注意存在嵌套解引用的情况，因此 DEREF 单臂所指向的也可能是一个 DEREF 节点，因此需要递归处理</li>
+<li>取地址不存在嵌套，但存在对一个解引用的expr进行取地址的情况，因此在计算地址时需要单独处理</li>
+</ul>
+<pre><code class="language-c">  case ND_ADDR:
+    // 计算单臂指向的变量的地址，保存到 a0 中
+    gen_addr(node-&gt;rhs);
+    return;
+  case ND_DEREF:
+    // 解引用向右递归
+    gen_expr(node-&gt;rhs);
+    printf(&quot;  # 读取 a0 中间接引用的值，存入到 a0中\n&quot;);
+    printf(&quot;  ld a0, 0(a0)\n&quot;);
+</code></pre>
+<pre><code class="language-c">static void gen_addr(Node *node) {
+
+  switch (node-&gt;kind) {
+  case ND_VAR: // Object var 为指针, 在 prog 中被修改后, 同时也能从 Node 访问
+    printf(&quot;  # 获取变量%s的栈内地址为%d(fp)\n&quot;, node-&gt;var-&gt;name,
+           node-&gt;var-&gt;offset);
+    printf(&quot;  addi a0, fp, %d\n&quot;, node-&gt;var-&gt;offset);
+    return;
+  case ND_DEREF: // 对一个解引用expr进行取地址
+    gen_expr(node-&gt;rhs);
+    return;
+  default:
+    break;
+  }
+
+  error_token(node-&gt;token, &quot;not an lvalue&quot;);
+}
+</code></pre>
+<h1 id="支持指针的算术运算"><a class="header" href="#支持指针的算术运算">支持指针的算术运算</a></h1>
+<p>C中对不同类型的指针进行计算时，具体运算的值取决于类型, 以此为目标，则需要让编译器支持类型系统，这一过程在 paser 中完成</p>
+<ul>
+<li>对于每个Node，增加 Type 字段标识其类型</li>
+<li>完成 stmt 的 AST 构造后，需要遍历所有的 Node，设置好对应的 Type</li>
+</ul>
+<p>类型系统声明</p>
+<pre><code class="language-c">// 类型
+typedef enum {
+  TY_INT, // int整形
+  TY_PTR, // 指针类型
+} TypeKind;
+
+struct Type {
+  TypeKind kind; // 类型
+  Type *base;    // 类型指针时，所指向的类型
+};
+
+// Type int
+extern Type *TYPE_INT;
+
+// 判断是否为 Type int
+bool is_integer(Type *type);
+
+// 遍历 AST 并为所有 NODE 增加类型
+void add_type(Node *node);
+</code></pre>
+<h2 id="词法分析-10"><a class="header" href="#词法分析-10">词法分析</a></h2>
+<p>无新增词法，不必修改</p>
+<h2 id="语法分析-10"><a class="header" href="#语法分析-10">语法分析</a></h2>
+<p>expr 结果的类型确定(a0中值的类型)</p>
+<ul>
+<li>ADD、SUB、MUL、DIV、NEG、ASSIGN都与左子节点(单臂)的类型相同</li>
+<li>EQ、NE、LT、LE、VAR、NUM 都设置为 TYPE_INT(当前仅有)</li>
+<li>ADDR为PTR类型，同时base需要由单臂所指向节点的类型来决定</li>
+<li>DEREF类型要么是 TYPE_INT, 要么根据单臂所指向节点的base来决定</li>
+</ul>
+<pre><code class="language-c">// 遍历 AST 并为所有 expr NODE 增加类型
+void add_type(Node *node) {
+  if (!node || node-&gt;type)
+    return;
+
+  // 递归访问所有的子节点
+  add_type(node-&gt;lhs);
+  add_type(node-&gt;rhs);
+  add_type(node-&gt;cond);
+  add_type(node-&gt;then);
+  add_type(node-&gt;els);
+  add_type(node-&gt;init);
+  add_type(node-&gt;inc);
+
+  // 遍历 stmt 链表
+  for (Node *n = node-&gt;body; n; n = n-&gt;next)
+    add_type(n);
+
+  switch (node-&gt;kind) {
+  case ND_ADD:
+  case ND_SUB:
+  case ND_MUL:
+  case ND_DIV:
+  case ND_NEG:
+  case ND_ASSIGN:
+    // ADD、SUB、MUL、DIV、NEG、ASSIGN都与左子节点(单臂)的类型相同
+    node-&gt;type = node-&gt;lhs-&gt;type;
+    return;
+  case ND_EQ:
+  case ND_NE:
+  case ND_LT:
+  case ND_LE:
+  case ND_VAR:
+  case ND_NUM:
+    // EQ、NE、LT、LE、VAR、NUM 都设置为 TYPE_INT
+    node-&gt;type = TYPE_INT;
+    return;
+  case ND_ADDR:
+    // 取地址节点的类型根据单臂所指向节点的类型来决定
+    node-&gt;type = pointer_to(node-&gt;lhs-&gt;type);
+    return;
+  case ND_DEREF:
+    if (node-&gt;lhs-&gt;type-&gt;kind == TY_PTR) // 嵌套解引用
+      node-&gt;type = node-&gt;lhs-&gt;type-&gt;base;
+    else // 当前只有 INT 数据类型
+      node-&gt;type = TYPE_INT;
+    return;
+  default:
+    break;
+  }
+}
+</code></pre>
+<p>在构造 AST 时，除了需要调用 add_type 来为 Node 增加类型属性意外，对于 ptr 而言， add 和 sub 的处理逻辑也有所不同</p>
+<p>Node add 处理方法</p>
+<ul>
+<li>invalid: ptr + ptr</li>
+<li>special: ptr + num | num + ptr -&gt; ptr</li>
+</ul>
+<pre><code class="language-c">// 创建ADD节点
+// num | ptr + num | ptr
+// 未声明 Type，上层会使类型与 lhs 相同
+static Node *new_node_add(Node *lhs, Node *rhs, Token *token) {
+  add_type(lhs);
+  add_type(rhs);
+
+  // num + num
+  if (is_integer(lhs-&gt;type) &amp;&amp; is_integer(rhs-&gt;type)) {
+    return new_node_bin(ND_ADD, lhs, rhs, token);
+  }
+
+  // ptr + ptr
+  // invalid
+  if (lhs-&gt;type-&gt;base &amp;&amp; rhs-&gt;type-&gt;base)
+    error_token(token, &quot;invalid operands&quot;);
+
+  // num + ptr
+  // change to  ptr + num
+  if (!lhs-&gt;type-&gt;base &amp;&amp; rhs-&gt;type-&gt;base) {
+    Node *temp = lhs;
+    lhs = rhs;
+    rhs = temp;
+  }
+
+  // 将 ptr + num 转化为 ptr + (num * 8) 从而计算地址
+  rhs = new_node_bin(ND_MUL, rhs, new_node_num(8, token), token);
+  return new_node_bin(ND_ADD, lhs, rhs, token);
+}
+</code></pre>
+<p>Node sub 处理方法</p>
+<ul>
+<li>invalid: num - ptr</li>
+<li>special
+<ul>
+<li>ptr - num -&gt; ptr</li>
+<li>ptr - ptr -&gt; num</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-c">// 创建SUB节点
+// num | ptr - num | ptr
+// 未声明 Type，上层会使类型与 lhs 相同
+static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
+  add_type(lhs);
+  add_type(rhs);
+
+  // num + num
+  if (is_integer(lhs-&gt;type) &amp;&amp; is_integer(rhs-&gt;type)) {
+    return new_node_bin(ND_SUB, lhs, rhs, token);
+  }
+
+  // ptr - num
+  if (lhs-&gt;type-&gt;base &amp;&amp; is_integer(rhs-&gt;type)) {
+    rhs = new_node_bin(ND_MUL, rhs, new_node_num(8, token), token);
+    return new_node_bin(ND_SUB, lhs, rhs, token);
+  }
+
+  // ptr - ptr
+  // 计算两个指针之间由多少元素
+  if (lhs-&gt;type-&gt;base &amp;&amp; rhs-&gt;type-&gt;base) {
+    Node *node = new_node_bin(ND_SUB, lhs, rhs, token);
+    // 注意 ptr - ptr 的类型应当为 INT, 这样才有意义
+    node-&gt;type = TYPE_INT;
+    return new_node_bin(ND_DIV, node, new_node_num(8, token), token);
+  }
+
+  // num - ptr
+  error_token(token, &quot;invalid operands&quot;);
+  return NULL;
+}
+</code></pre>
+<h2 id="语义分析-10"><a class="header" href="#语义分析-10">语义分析</a></h2>
+<p>现增的类型系统主要是为处理指针的加减运算，而实际在AST构造的过程中，针对加减的运算的处理表现为lhs或rhs的替换，而在代码生成逻辑上并没有变化，因此语义分析处不必进行修改</p>
+<h1 id="支持int关键字以定义变量"><a class="header" href="#支持int关键字以定义变量">支持int关键字以定义变量</a></h1>
+<p>int 作为变量类型的声明，实际上也是一个关键字，围绕此关键字设计以完成相关功能</p>
+<p><img src="./images/dec_var.svg" alt="dec_var" /></p>
+<h2 id="词法分析-11"><a class="header" href="#词法分析-11">词法分析</a></h2>
+<p>增加对于 <code>int</code> 关键字的解析, 其次增加一个 <code>consume</code> 方法，用来消耗一个 token</p>
+<pre><code class="language-c">// 尝试跳过 str, rest保存跳过之后的 Token*, 返回值表示是否跳过成功
+bool consume(Token **rest, Token *token, char *str) {
+  if (equal(token, str)) {
+    // 移动到下一个
+    *rest = token-&gt;next;
+    return true;
+  }
+
+  *rest = token;
+  return false;
+}
+
+</code></pre>
+<h2 id="类型系统"><a class="header" href="#类型系统">类型系统</a></h2>
+<p>Object 中保存了变量的类型，因此需要将 ND_VAR 的类型与 Object 进行同步, 同时需要修改之前假定所有数值都为 INT 的逻辑(即便还是只有INT)，使之更加合理</p>
+<pre><code class="language-c"> case ND_VAR:
+    // 变量节点的类型与变量节点中保存的 Object Var 的类型相同
+    node-&gt;type = node-&gt;var-&gt;type;
+    return;
+  case ND_ADDR:
+    // 取地址节点的类型根据单臂所指向节点的类型来决定
+    node-&gt;type = pointer_to(node-&gt;lhs-&gt;type);
+    return;
+  case ND_DEREF:
+    // ND_DEREF 单臂必须指向一个指针
+    if (node-&gt;lhs-&gt;type-&gt;kind != TY_PTR)
+      error_token(node-&gt;token, &quot;invalid pointer dereference&quot;);
+
+    // ND_DEREF 的类型为指针指向的类型
+    node-&gt;type = node-&gt;lhs-&gt;type-&gt;base;
+</code></pre>
+<h2 id="语法分析-11"><a class="header" href="#语法分析-11">语法分析</a></h2>
+<p>引入了变量声明，推导式中需要增加 <code>declaration</code> 表达式</p>
+<ul>
+<li><code>{int;}</code> 是被允许的</li>
+</ul>
+<pre><code>// compoundStmt = (declaration | stmt)* &quot;}&quot;
+// declaration =
+//         declspec (declarator (&quot;=&quot; expr)? (&quot;,&quot; declarator (&quot;=&quot; expr)?)*)? &quot;;&quot;
+// declspec = &quot;int&quot;
+// declarator = &quot;*&quot;* ident
+</code></pre>
+<p>Ident token 会保存在 Type 中， 而为获取 ident 名称，增加方法 <code>get_ident</code></p>
+<pre><code class="language-c">// 获取标识符字符串
+static char *get_ident(Token *token) {
+  if (token-&gt;kind != TK_IDENT)
+    error_token(token, &quot;expected an identifier&quot;);
+  return strndup(token-&gt;loc, token-&gt;len);
+}
+</code></pre>
+<p>递推式增加 declaration， declarator， declspec 三部分</p>
+<pre><code class="language-c">// declspec = &quot;int&quot;
+static Type *declspec(Token **rest, Token *token) {
+  *rest = skip(token, &quot;int&quot;);
+  return TYPE_INT;
+}
+
+// declarator = &quot;*&quot;* ident
+// Type *type 为基础类型(int)
+static Type *declarator(Token **rest, Token *token, Type *type) {
+  // 处理多个 *
+  // var, * -&gt; * -&gt; * -&gt; * -&gt; base_type
+  while (consume(&amp;token, token, &quot;*&quot;)) {
+    type = pointer_to(type);
+  }
+
+  if (token-&gt;kind != TK_IDENT)
+    error_token(token, &quot;expected a variable name&quot;);
+
+  type-&gt;token = token;
+  *rest = token-&gt;next;
+  return type;
+}
+
+// declaration =
+//         declspec (declarator (&quot;=&quot; expr)? (&quot;,&quot; declarator (&quot;=&quot; expr)?)*)? &quot;;&quot;
+PARSER_DEFINE(declaration) {
+  Type *base_type = declspec(&amp;token, token);
+
+  // 处理多个 declarator (&quot;=&quot; expr)?
+  Node head = {};
+  Node *cur = &amp;head;
+
+  // 记录变量的声明次数
+  int i = 0;
+
+  while (!equal(token, &quot;;&quot;)) {
+
+    // 除第一个以外，在开始时都要跳过 &quot;,&quot;
+    if (i++ &gt; 0)
+      token = skip(token, &quot;,&quot;);
+
+    // 获取变量类型
+    Type *type = declarator(&amp;token, token, base_type);
+    // 构造一个变量
+    Object *var = new_local_var(get_ident(type-&gt;token), type);
+
+    // 不存在赋值，则进行跳过
+    if (!equal(token, &quot;=&quot;))
+      continue;
+
+    // 左值为变量
+    Node *lhs = new_node_var(var, type-&gt;token);
+    // 解析赋值语句
+    Node *rhs = assign(&amp;token, token-&gt;next);
+    Node *node = new_node_bin(ND_ASSIGN, lhs, rhs, token);
+
+    cur-&gt;next = new_node_unary(ND_EXPR_STMT, node, token);
+    cur = cur-&gt;next;
+  }
+
+  Node *node = new_node(ND_BLOCK, token);
+  node-&gt;body = head.next;
+  *rest = token;
+  return node;
+}
+</code></pre>
+<h2 id="语义分析-11"><a class="header" href="#语义分析-11">语义分析</a></h2>
+<p>定义变量更多地是与类型系统，paser 交互，实际呈现出来的效果是，声明变量时必须指示类型，而在语义部分没有任何修改</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="支持零参函数调用"><a class="header" href="#支持零参函数调用">支持零参函数调用</a></h1>
+<p>函数与变量类似，是一种新的节点 ND_FNCALL, 同时在 Node 中增加 func_name 成员，用来说明标识函数名称</p>
+<ul>
+<li>ident 现在也包括了 函数</li>
+<li>构造 ND_FNCALL node 时，需要为 node 添加 func_name</li>
+</ul>
+<h2 id="词法分析-12"><a class="header" href="#词法分析-12">词法分析</a></h2>
+<p>函数与变量都是 ident，因此词法分析部分无需增加逻辑</p>
+<h2 id="类型分析"><a class="header" href="#类型分析">类型分析</a></h2>
+<p>对于 ND_FNCALL，暂时将其 type 设置为 INT(假设返回值为数字)</p>
+<h2 id="语法分析-12"><a class="header" href="#语法分析-12">语法分析</a></h2>
+<p>增加推导式</p>
+<ul>
+<li>ident args? 即是函数声明</li>
+</ul>
+<pre><code>// primary = &quot;(&quot; expr &quot;)&quot; | ident args?｜ num
+// args = &quot;(&quot; &quot;)&quot;
+</code></pre>
+<p>primary 中更新下降式</p>
+<pre><code class="language-c">  // ident
+  if (token-&gt;kind == TK_IDENT) {
+    // ident args?
+    if (equal(token-&gt;next, &quot;(&quot;)) {
+      Node *node = new_node(ND_FNCALL, token);
+      node-&gt;func_name = strndup(token-&gt;loc, token-&gt;len);
+      *rest = skip(token-&gt;next-&gt;next, &quot;)&quot;);
+      return node;
+    }
+
+    // ident var
+    Object *var = find_var_by_token(token);
+    if (!var) // 变量在声明中定义，必须存在
+      error_token(token, &quot;undefined variable&quot;);
+
+    *rest = token-&gt;next;
+    return new_node_var(var, token);
+  }
+</code></pre>
+<h2 id="语义分析-12"><a class="header" href="#语义分析-12">语义分析</a></h2>
+<p>新的栈布局</p>
+<ul>
+<li>rv中使用 ra 作为 ret 应当加载到 pc 的地址</li>
+<li>调用函数时 call 会自动地将下一指令的地址加载到 ra 中，因此在每个函数的开头，都必须保存保存ra，使得即便自己运行中调用了函数，也不必担心覆盖调用者的 ra</li>
+</ul>
+<pre><code>// 栈布局
+//-------------------------------// sp
+//              ra
+//-------------------------------// ra = sp-8
+//              fp
+//-------------------------------// fp = sp-16
+//             变量
+//-------------------------------// sp = sp-16-StackSize
+//           表达式计算
+//-------------------------------//
+</code></pre>
+<p>case 处理</p>
+<pre><code>  case ND_FNCALL:
+    printf(&quot;  # 调用函数%s\n&quot;, node-&gt;func_name);
+    printf(&quot;  call %s\n&quot;, node-&gt;func_name);
+    return;
+</code></pre>
+<p>ra 保存与恢复</p>
+<pre><code class="language-c">  printf(&quot;  addi sp, sp, -16\n&quot;);
+  printf(&quot;  # 将ra压栈\n&quot;);
+  printf(&quot;  sd ra, 8(sp)\n&quot;);
+  ...
+  printf(&quot;  # 恢复fp、ra和sp\n&quot;);
+  printf(&quot;  ld fp, 0(sp)\n&quot;);
+  printf(&quot;  ld ra, 8(sp)\n&quot;);
+  printf(&quot;  addi sp, sp, 16\n&quot;);
+</code></pre>
+<h1 id="支持最多6个参数的函数调用"><a class="header" href="#支持最多6个参数的函数调用">支持最多6个参数的函数调用</a></h1>
+<p>rv中约定通过 <code>a0..a5</code> 6个寄存器来传递最多6个函数参数，在 call 一个多参数函数之前，需要将参数填入到 6 个寄存器中</p>
+<ul>
+<li>Node中增加 <code>Node *args</code> 成员指向AST中的多个参数</li>
+<li>语法中可能将另一个函数调用放置在参数位置上，此时应当首先 call 此函数，再将其值保存到对应位置的寄存器上，再call外层的函数</li>
+</ul>
+<p><img src="./images/call.svg" alt="call" /></p>
+<h2 id="语法分析-13"><a class="header" href="#语法分析-13">语法分析</a></h2>
+<p>推导式修改</p>
+<pre><code>// primary = &quot;(&quot; expr &quot;)&quot; | ident | fncall | num
+// fncall = ident &quot;(&quot; (assign (&quot;,&quot; assign)*)? &quot;)&quot;
+</code></pre>
+<p>fncall 构造逻辑</p>
+<pre><code class="language-c">// fncall = ident &quot;(&quot; (assign (&quot;,&quot; assign)*)? &quot;)&quot;
+PARSER_DEFINE(fncall) {
+  Token *start = token;
+  token = token-&gt;next-&gt;next;
+
+  Node head = {};
+  Node *cur = &amp;head;
+
+  // 构造参数
+  while (!equal(token, &quot;)&quot;)) {
+    if (cur != &amp;head)
+      token = skip(token, &quot;,&quot;);
+
+    cur-&gt;next = assign(&amp;token, token);
+    cur = cur-&gt;next;
+  }
+
+  Node *node = new_node(ND_FNCALL, start);
+  node-&gt;args = head.next;
+  node-&gt;func_name = strndup(start-&gt;loc, start-&gt;len);
+
+  // 跳过 &quot;)&quot;
+  *rest = skip(token, &quot;)&quot;);
+  return node;
+}
+</code></pre>
+<p>primary 处理</p>
+<pre><code class="language-c">  // ident
+  if (token-&gt;kind == TK_IDENT) {
+    // fncall
+    if (equal(token-&gt;next, &quot;(&quot;)) {
+      return fncall(rest, token);
+    }
+</code></pre>
+<h2 id="语义分析-13"><a class="header" href="#语义分析-13">语义分析</a></h2>
+<p>ND_FNCALL 代码生成逻辑修改</p>
+<ul>
+<li>参数都以 Node 形式按顺序保存在 args 成员中，因此首先顺序遍历 args, 并将每个 expr 的结果保存到栈上</li>
+<li>相关指令执行完毕后，所有参数必然按属性排列在栈上，因此弹栈并按反向顺序保存到寄存器中</li>
+</ul>
+<pre><code class="language-c">  case ND_FNCALL: {
+    int argc = 0;
+
+    // 遍历所有参数，并将参数逐个压入栈中
+    for (Node *arg = node-&gt;args; arg; arg = arg-&gt;next) {
+      gen_expr(arg);
+      push();
+      argc++;
+    }
+
+    // 上述指令执行完毕时，参数必然按顺序放置在栈上
+    // 反向弹栈
+    for (int i = argc - 1; i &gt;= 0; i--) {
+      pop(func_arg_regs[i]);
+    }
+
+    printf(&quot;  # 调用函数%s\n&quot;, node-&gt;func_name);
+    printf(&quot;  call %s\n&quot;, node-&gt;func_name);
+
+    return;
+  }
+</code></pre>
+<h1 id="支持零参函数定义"><a class="header" href="#支持零参函数定义">支持零参函数定义</a></h1>
+<p>支持零参函数则意味着编译器需要对多个函数进行支持</p>
+<ul>
+<li>以函数为粒度进行 parse</li>
+</ul>
+<p>修改 Function 结构体，增加 <code>next</code> 成员，将多个 Function 以链表的形式串起来，从而让代码支持多函数</p>
+<h2 id="词法分析-13"><a class="header" href="#词法分析-13">词法分析</a></h2>
+<p>使用类 C 语法，因此函数定义没有采用 <code>fn</code> 类似的关键字，而是根据模式是否复合 <code>ident ident ()</code> 来决定是否按函数进行解析，因此在词法分析处不必进行修改</p>
+<h2 id="类型分析-1"><a class="header" href="#类型分析-1">类型分析</a></h2>
+<p>增加 TY_FUNC 作为函数类型，与 PTR 类型相似的时，在 Type 结构体中增加 <code>ret_type</code> 成员，作为 函数类型 的返回值</p>
+<pre><code class="language-c">// 创建一个函数类型， 且返回值为ret_type
+Type *func_type(Type *ret_type) {
+  Type *type = calloc(1, sizeof(Type));
+  type-&gt;kind = TY_FUNC;
+  type-&gt;ret_type = ret_type;
+
+  return type;
+}
+</code></pre>
+<h2 id="语法分析-14"><a class="header" href="#语法分析-14">语法分析</a></h2>
+<p>推导式更新</p>
+<pre><code>// program = function*
+// function = declspec declarator &quot;{&quot; compoundStmt*
+// declspec = &quot;int&quot;
+// declarator = &quot;*&quot;* ident type_suf
+// type_suf = (&quot;(&quot; &quot;)&quot;)?
+</code></pre>
+<p>其中 type_suf 用来判断是函数还是变量</p>
+<pre><code class="language-c">// type_suf = (&quot;(&quot; &quot;)&quot;)?
+// Type *type 为基础类型(如 int)
+static Type *type_suf(Token **rest, Token *token, Type *type) {
+  if (equal(token, &quot;(&quot;)) { // 零参函数
+    *rest = skip(token-&gt;next, &quot;)&quot;);
+    return func_type(type);
+  }
+
+  *rest = token;
+  return type;
+}
+</code></pre>
+<p>同时增加的 function 推导包含了先前 parse 的逻辑，而 parse 需要支持多 Function</p>
+<pre><code class="language-c">// function = declspec declarator &quot;{&quot; compoundStmt*
+static Function *function(Token **rest, Token *token) {
+  // 返回值的基础类型
+  Type *type = declspec(&amp;token, token);
+
+  // type为函数类型
+  // 指向 return type, 同时判断指针
+  // type-&gt;token 指向了 ident 对应的 token
+  type = declarator(&amp;token, token, type);
+
+  // 清空局部变量
+  LOCALS = NULL;
+
+  Function *func = calloc(1, sizeof(Function));
+  func-&gt;name = get_ident(type-&gt;token);
+
+  token = skip(token, &quot;{&quot;);
+  func-&gt;body = compound_stmt(rest, token);
+  func-&gt;locals = LOCALS;
+  return func;
+}
+</code></pre>
+<h2 id="语义分析-14"><a class="header" href="#语义分析-14">语义分析</a></h2>
+<p>由于存在多个函数，因此在 call 与 return 的地方都要利用函数名进行区分, 因此在段标签生成上需要为每个函数单独进行处理</p>
+<ul>
+<li>assign_local_val_offsets 需要为每个函数处理</li>
+<li>使用一个全局的 CUR_FUNC 记录现在正在处理的函数</li>
+</ul>
+<h1 id="支持最多6个参数的函数定义"><a class="header" href="#支持最多6个参数的函数定义">支持最多6个参数的函数定义</a></h1>
+<p>扩展 Function 结构体，增加 <code>params</code> 字段表示形参</p>
+<ul>
+<li>形参 也是 Locals, 此处单独处理是因为函数调用时，params要进行单独赋值</li>
+</ul>
+<p>扩展 Type 结构体，增加 <code>params</code> 与 <code>next</code></p>
+<ul>
+<li>形参由多个 Type 组合而成(此时仅支持多个 TYPE_INT)</li>
+<li><code>next</code> 字段允许Type构成链表</li>
+<li><code>params</code> 作为 TY_FUNC 类型的扩充字段，指向形参链表头</li>
+</ul>
+<p><img src="./images/params.svg" alt="parmas" /></p>
+<h2 id="类型分析-2"><a class="header" href="#类型分析-2">类型分析</a></h2>
+<p>增加 <code>copy_type</code> 函数, 对栈上的 Type 进行浅拷贝</p>
+<pre><code>// 复制类型
+// 浅拷贝，仅复制栈上数据
+Type *copy_type(Type *type) {
+  Type *rlt = calloc(1, sizeof(Type));
+  *rlt = *type;
+
+  return rlt;
+}
+</code></pre>
+<p>允许对函数进行参数声明之后，需要在 <code>add_type</code> 逻辑中补充对于参数的类型构造</p>
+<pre><code>  // 访问所有参数以增加类型
+  for (Node *n = node-&gt;args; n; n = n-&gt;next)
+    add_type(n);
+</code></pre>
+<h2 id="语法分析-15"><a class="header" href="#语法分析-15">语法分析</a></h2>
+<p>推导式修改</p>
+<pre><code>// type_suf = (&quot;(&quot; func_params? &quot;)&quot;)?
+// func_params = param (&quot;,&quot; param)*
+// param = declspec declarator
+</code></pre>
+<p><code>type_suf</code> 逻辑变化</p>
+<ul>
+<li>为函数时，支持形参的解析，通过构造 Type 链表，构造形参链表，并存储到 TY_FUNC 类型的 Type 的 <code>params</code> 字段中</li>
+</ul>
+<pre><code class="language-c">// type_suf = (&quot;(&quot; func_params? &quot;)&quot;)?
+// func_params = param (&quot;,&quot; param)*
+// param = declspec declarator
+// Type *type 为基础类型(如 int)
+static Type *type_suf(Token **rest, Token *token, Type *type) {
+  if (equal(token, &quot;(&quot;)) { // 函数
+    token = token-&gt;next;
+
+    // 存储形参
+    Type head = {};
+    Type *cur = &amp;head;
+
+    while (!equal(token, &quot;)&quot;)) {
+      if (cur != &amp;head)
+        token = skip(token, &quot;,&quot;);
+
+      Type *base_type = declspec(&amp;token, token);
+      // 不可将 declspec 嵌套的原因是
+      // declarator 的前几个参数会先准备好，然后再调用 declspec
+      // 而因此导致的 token 变化无法被 declarator 感知
+      // 因此不能将 declspec 进行嵌套
+      Type *dec_type = declarator(&amp;token, token, base_type);
+
+      // dec_type 为局部变量，地址不会改变，因此每次都需要拷贝，否则链表就会成环
+      cur-&gt;next = copy_type(dec_type);
+      cur = cur-&gt;next;
+    }
+
+    // 将参数加入到函数 Type 中
+    type = func_type(type);
+    type-&gt;params = head.next;
+
+    *rest = token-&gt;next;
+    return type;
+  }
+
+  *rest = token;
+  return type;
+}
+</code></pre>
+<p>function 逻辑中，在构造 comp stmt 之前(生成函数中 LOCALS之前), 将形参加入其中，并从 Type 生成 Object, 保存到 <code>func-&gt;params</code> 字段</p>
+<ul>
+<li>头插保证了每次 LOCALS 更新后，LOCALS 链表头都会变, 因此在 <code>构造 comp stmt</code> 前后， LOCALS值是不同的</li>
+</ul>
+<pre><code class="language-c">// 递归地将函数形参加入到 Local 中
+static void insert_param_to_locals(Type *param) {
+  if (param) {
+    insert_param_to_locals(param-&gt;next);
+    new_local_var(get_ident(param-&gt;token), param);
+  }
+}
+
+
+  insert_param_to_locals(type-&gt;params);
+  func-&gt;params = LOCALS;
+</code></pre>
+<h2 id="语义分析-15"><a class="header" href="#语义分析-15">语义分析</a></h2>
+<p>增加对形参的赋值, 即从约定好的寄存器中，将值拷贝到形参对应的内存地址上</p>
+<pre><code class="language-c">    int i = 0;
+    for (Object *var = f-&gt;params; var; var = var-&gt;next) {
+      printf(&quot;  # 将%s寄存器的值存入%s的栈地址\n&quot;, func_arg_regs[i], var-&gt;name);
+      printf(&quot;  sd %s, %d(fp)\n&quot;, func_arg_regs[i++], var-&gt;offset);
+    }
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="支持一维数组"><a class="header" href="#支持一维数组">支持一维数组</a></h1>
+<p>形如 <code>int x[3]</code> 这样的声明，构造了一个长度为3，类型为 int 的数组 x, 因此支持一维数据实际是增加了一种 Type, 在 Type 枚举中增加 <code>TY_ARRAY</code> 类型，对应这样的类型，还需要在 Type 结构体中增加 <code>size</code> 与 <code>len</code> 成员</p>
+<ul>
+<li><code>int x[</code> 形如 <code>int x(</code>， 因此在 type_sub 处进行处理</li>
+</ul>
+<h2 id="类型分析-3"><a class="header" href="#类型分析-3">类型分析</a></h2>
+<p>由于 <code>Type</code> 现在拥有了 <code>size</code>(对所有类型而言) 与 <code>len</code>(对数组而言) 成员, 因此至少要为 Pointer、Interger、Arrary增加相应的初始值</p>
+<pre><code class="language-c">// 创建一个函数类型， 且返回值为ret_type
+Type *func_type(Type *ret_type) {
+  Type *type = calloc(1, sizeof(Type));
+  type-&gt;kind = TY_FUNC;
+  type-&gt;ret_type = ret_type;
+
+  return type;
+}
+</code></pre>
+<p>对于数组而言，取地址获取的是 int* 类型的值，解引用获取的则是 int 类型的值</p>
+<ul>
+<li>对ARRAY取地址的操作获取的是 base type 的指针，也是数组的起始地址</li>
+<li>对ARRAY的解引用操作获取的则是 base type</li>
+</ul>
+<pre><code class="language-c">  case ND_ADDR: {
+    Type *type = node-&gt;lhs-&gt;type;
+
+    // 取地址节点的类型根据单臂所指向节点的类型来决定
+    // 如果是数组，&amp;的结果为指向 base 的指针
+    if (type-&gt;kind == TY_ARRAY)
+      node-&gt;type = pointer_type(type-&gt;base);
+    else
+      node-&gt;type = pointer_type(type);
+    return;
+  }
+  case ND_DEREF:
+    // ND_DEREF 的单臂必须有基类
+    if (!node-&gt;lhs-&gt;type-&gt;base)
+      error_token(node-&gt;token, &quot;invalid pointer dereference&quot;);
+
+    // ND_DEREF 的类型为指针指向的类型
+    node-&gt;type = node-&gt;lhs-&gt;type-&gt;base;
+    return;
+</code></pre>
+<h2 id="语法分析-16"><a class="header" href="#语法分析-16">语法分析</a></h2>
+<p>推导式更新, 定义一个类型之后，可能出现的情况有</p>
+<ul>
+<li><code>(</code> 开头的函数</li>
+<li><code>[</code> 开头的数组</li>
+<li>以上都不符合，则为一个基础类型，返回 type 即可</li>
+</ul>
+<pre><code>// type_suf = &quot;(&quot; func_params | &quot;[&quot; num &quot;]&quot; | ε
+// func_params = param (&quot;,&quot; param)*)? &quot;)&quot;
+</code></pre>
+<p>增加一个从 token 读取数字的方法, 从而处理<code>int x[3]</code>中静态大小声明</p>
+<pre><code class="language-c">// 获取数字
+static int get_num(Token *token) {
+  if (token-&gt;kind != TK_NUM)
+    error_token(token, &quot;expected a number&quot;);
+
+  return token-&gt;val;
+}
+</code></pre>
+<p>提取 <code>func_params</code> 逻辑, 同时处理数组声明</p>
+<pre><code class="language-c">/**
+ * func_params(Token **rest, Token *token, Type *type)
+ *
+ * type_suf = &quot;(&quot; func_params | &quot;[&quot; num &quot;]&quot; | ε
+ *
+ * @param rest 指向剩余token指针的指针
+ * @param token 正在处理的 token
+ * @param type type_suf 之前所识别出来的类型 indent
+ *
+ * @return 构造好的 Type
+ */
+static Type *type_suf(Token **rest, Token *token, Type *type) {
+  if (equal(token, &quot;(&quot;)) // 函数
+    return func_params(rest, token-&gt;next, type);
+
+  if (equal(token, &quot;[&quot;)) {
+    int len = get_num(token-&gt;next);
+    *rest = skip(token-&gt;next-&gt;next, &quot;]&quot;);
+    return array_type(type, len);
+  }
+
+  *rest = token;
+  return type;
+}
+</code></pre>
+<p>由于 ARRAY 不是 INT, 因此对于 Type 为 ARRARY 的NODE 的加减 会按照 ptr 的方式进行处理</p>
+<h2 id="语义分析-16"><a class="header" href="#语义分析-16">语义分析</a></h2>
+<p>由于可读的变量类型也包括了数组，因此抽象对于地址 load\store 操作，并修改 <code>assign_local_val_offsets</code> 方法，支持不同的 var_type_size</p>
+<pre><code class="language-c">// a0 中保存了一个地址
+// 将此地址的值加载到 a0 中
+static void load(Type *type) {
+  if (type-&gt;kind == TY_ARRAY)
+    return;
+  printf(&quot;  # 读取a0中存放的地址, 得到的值存入a0\n&quot;);
+  printf(&quot;  ld a0, 0(a0)\n&quot;);
+}
+
+// 栈保存了一个地址
+// 将此地址 pop 到 a1 中
+// 将 a0 中的值保存到此地址
+static void store(void) {
+  pop(&quot;a1&quot;);
+  printf(&quot;  # 将a0的值, 写入到 a1 中存放的地址\n&quot;);
+  printf(&quot;  sd a0, 0(a1)\n&quot;);
+}
+</code></pre>
+<h1 id="支持多维数组"><a class="header" href="#支持多维数组">支持多维数组</a></h1>
+<p><code>int x[3][4]</code> 这样的多维数组声明，可以理解为递归的进行 <code>(x[3])[4]</code> -&gt; <code>x[3])</code> 构造，由于在一维数组中，已经支持了对 <code>x[3]</code> 的类型构造，那么在 int 的基础上，只需要递归地解析即可</p>
+<ul>
+<li>递归最深处， type-&gt;base 为 int ，size 为 4 * int</li>
+<li>递归次深处, type-&gt;base 为上述构造的 arrary type， size 为 3 * int[4]</li>
+</ul>
+<h1 id="支持操作符"><a class="header" href="#支持操作符">支持[]操作符</a></h1>
+<p>允许通过 <code>x[i]</code> 进行数组成员的读写</p>
+<h2 id="语法分析-17"><a class="header" href="#语法分析-17">语法分析</a></h2>
+<p>推导式增加, <code>x[i]</code> 即是一种 postfix</p>
+<pre><code>// unary = (&quot;+&quot; | &quot;-&quot; | &quot;*&quot; | &quot;&amp;&quot;) unary | postfix
+// postfix = primary (&quot;[&quot; expr &quot;]&quot;)*
+</code></pre>
+<p>增加的 postfix 多了匹配 <code>x[]</code> 的逻辑</p>
+<ul>
+<li><code>Node *index</code>记录了下标计算的表达式</li>
+<li><code>new_node_add(node, index, start)</code> 生成了一个加法节点，将当前node(最开始是变量 node) 与 index 相加(地址)</li>
+<li>对于 <code>x[3]</code> new_node_add 生成的就是 x_addr + 3</li>
+<li>由于生成的是一个相对于数组起始地址的偏移，因此需要通过解引用来获取值，实现<code>[]</code>操作符的逻辑</li>
+</ul>
+<p><code>int x[3][4]</code> 声明了一个 二维数组, <code>x[1][2]</code> 获取的(0,0)上的值</p>
+<ul>
+<li>对于这个示例，首先可知道，最右边定义了一个 4 * int大小的一维数组，然后则定义了一个 3 * (4*int) 大小的数组</li>
+<li>postfix循环中，中首先读取 <code>[1]</code> 计算得到第1个 4 * int大小 数组的地址, 然后再计算<code>[1][2]</code>得到第 2 个 int 的地址</li>
+<li>解引用即可获取(1,2)上的值</li>
+</ul>
+<pre><code class="language-c">// postfix = primary (&quot;[&quot; expr &quot;]&quot;)*
+PARSER_DEFINE(postfix) {
+  Node *node = primary(&amp;token, token);
+
+  // x[][]...[]
+  while (equal(token, &quot;[&quot;)) {
+    Token *start = token;
+    Node *index = expr(&amp;token, token-&gt;next);
+    token = skip(token, &quot;]&quot;);
+    node = new_node_unary(ND_DEREF, new_node_add(node, index, start), start);
+  }
+
+  *rest = token;
+  return node;
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="支持-sizeof"><a class="header" href="#支持-sizeof">支持 sizeof</a></h1>
+<p><code>sizeof</code> 为一个新增的关键字, 返回指定类型变量的内存大小</p>
+<h2 id="词法分析-14"><a class="header" href="#词法分析-14">词法分析</a></h2>
+<p>增加 <code>sizeof</code> 关键字支持</p>
+<h2 id="语法分析-18"><a class="header" href="#语法分析-18">语法分析</a></h2>
+<p><code>sizeof</code> 作为一种对于变量的特殊运算，在编译时将其转化为变量的内存大小即可</p>
+<p>新增推导式</p>
+<pre><code>// primary = &quot;(&quot; expr &quot;)&quot; | &quot;sizeof&quot; unary | ident | fncall | num
+</code></pre>
+<p>这意味着 <code>sizeof</code> 实际上会构造一个 num 节点，num保存的 val 在编译时通过类型系统获得</p>
+<ul>
+<li>获取 sizeof(unary) 中的 unary 需要构造一个 unary 节点，然后通过 add_type 生成次此节点的类型</li>
+</ul>
+<pre><code class="language-c">  // &quot;sizeof&quot; unary
+  if (equal(token, &quot;sizeof&quot;)) {
+    Node *node = unary(rest, token-&gt;next);
+    add_type(node);
+    return new_node_num(node-&gt;type-&gt;size, token);
+  }
+</code></pre>
+<h1 id="融合function和var"><a class="header" href="#融合function和var">融合Function和Var</a></h1>
+<p>函数/变量结构体有许多相似之处，因此可以选择将两者融合</p>
+<ul>
+<li>这部分更多地是在进行代码重构</li>
+<li>由于Function也可作为一种Object, 区别于 LOCALS, Function这类的Object存放在 GLOBALS 中</li>
+</ul>
+<p>结合匿名 union 与 匿名 struct 优化内存占用</p>
+<pre><code class="language-c">struct Object {
+  Object *next; // 下一个Object
+  char *name;   // 名称
+  Type *type;   // 类型
+
+  bool is_local;    // 局部变量与否
+  bool is_function; // ObjectMember 属性
+
+  // union ObjectMember member;
+
+  union {
+    // Var
+    int offset; // 相对栈顶的偏移量
+
+    // Function
+    struct {
+      Object *params; // 形参
+      Node *body;     // 函数体(AST)
+      Object *locals; // 本地变量
+      int stack_size; // 栈大小
+    };
+  };
+};
+</code></pre>
+<pre><code class="language-c">struct Node {
+  Token *token;  // 节点对应终结符
+  NodeKind kind; // 节点的类型
+  Type *type;    // 节点中数据的类型
+  Node *next;
+
+  union {
+
+    // [l/r] ND_ADD, ND_SUB, ND_MUL, ND_DIV
+    //       ND_ASSIGN, ND_EQ,ND_NE,ND_LT,ND_LE
+    // [unary] ND_RETURN, ND_DEREF, ND_ADDR, ND_EXPR_STMT
+    struct {
+      Node *lhs;
+      Node *rhs;
+    };
+
+    // ND_VAR
+    Object *var; // 存储 ND_VAR 的变量信息
+
+    // ND_NUM;
+    int val; // 存储 ND_NUM 的值
+
+    // ND_BLOCK
+    Node *body; // 代码块
+
+    // ND_FNCALL
+    struct {
+      char *func_name; // 函数名称
+      Node *args;      // 函数参数
+    };
+
+    // ND_IF | ND_FOR
+    struct {
+      Node *cond; // 条件
+      Node *then; // 判断成立
+      union {
+        Node *els; // 判断失败
+
+        struct {      // ND_FOR
+          Node *init; // 循环初始化语句
+          Node *inc;  // 循环变量变化语句
+        };
+      };
+    };
+  };
+};
+</code></pre>
+<pre><code class="language-c">struct Type {
+  TypeKind kind; // 类型
+  int size;      // 大小
+  Token *token;  // 变量的名称
+
+  union {
+    // TY_PTR, TY_ARRAY
+    struct {
+      Type *base; // 为指针时，指向的类型; 为数组时,下标对应的类型
+      int len; // 为数组时，数组的长度
+    };
+
+    // TY_FUNC
+    struct {
+      Type *ret_type; // 返回值的类型
+      Type *params;   // 形参
+      Type *next;     //下一个类型
+    };
+  };
+};
+</code></pre>
+<h2 id="语法分析-19"><a class="header" href="#语法分析-19">语法分析</a></h2>
+<p>Function 转化为 Object， 并通过 GLOBALS 维护</p>
+<pre><code class="language-c">// program = function*
+Object *parse(Token *token) {
+  GLOBALS = NULL;
+
+  while (token-&gt;kind != TK_EOF) {
+    // 函数返回值类型
+    Type *type = declspec(&amp;token, token);
+    token = function(token, type);
+  }
+
+  return GLOBALS;
+}
+</code></pre>
+<h1 id="支持全局变量"><a class="header" href="#支持全局变量">支持全局变量</a></h1>
+<p>之前的设计中，只用 Function 是全局的(保存在 GLOBAL 中), 现在要将普通的变量也加入其中， 因此需要在 语法分析 与 语义分析上进行修改</p>
+<h2 id="语法分析-20"><a class="header" href="#语法分析-20">语法分析</a></h2>
+<p>推导式变化</p>
+<ul>
+<li>global_variable_def 也能够作为 program 的一种</li>
+</ul>
+<pre><code>// program = (function_def | global_variable_def) *
+// function_def = declspec function
+// function = declspec declarator &quot;{&quot; compound_stmt*
+// global_variable_def = declspec global_variable
+// global_variable = (declarator (&quot;,&quot; declarator))* &quot;;&quot;)*
+</code></pre>
+<p>全局变量解析</p>
+<pre><code class="language-c">/*
+ * global_variable = (declarator (&quot;,&quot; declarator))* &quot;;&quot;)*
+ *
+ * 当前仅支持全局变量的声明
+ * @param type 为基础类型，如 int
+ */
+static Token *global_variable(Token *token, Type *base) {
+  bool is_first = true;
+  while (!consume(&amp;token, token, &quot;;&quot;)) {
+    // 处理 int x,y 格式
+    if (!is_first)
+      token = skip(token, &quot;,&quot;);
+    is_first = false;
+
+    Type *type = declarator(&amp;token, token, base);
+    new_global_var(get_ident(type-&gt;token), type);
+  }
+
+  return token;
+}
+</code></pre>
+<p>prog 类型判断</p>
+<pre><code class="language-c">// 尝试生成 declarator 来判断是否是 FUNC
+static bool is_function(Token *token) {
+  Type dummy = {};
+  Type *type = declarator(&amp;token, token, &amp;dummy);
+  return type-&gt;kind == TY_FUNC;
+}
+</code></pre>
+<p>新的 parse</p>
+<pre><code class="language-c">// program = (function_def | global_variable_def) *
+// function_def = declspec function
+// global_variable_def = declspec global_variable
+Object *parse(Token *token) {
+  GLOBALS = NULL;
+
+  while (token-&gt;kind != TK_EOF) {
+    // 函数返回值类型
+    Type *type = declspec(&amp;token, token);
+
+    // function
+    if (is_function(token)) {
+      token = function(token, type);
+      continue;
+    }
+
+    // global_variable
+    token = global_variable(token, type);
+  }
+
+  return GLOBALS;
+}
+</code></pre>
+<h2 id="语义分析-17"><a class="header" href="#语义分析-17">语义分析</a></h2>
+<p>由于全局变量的引入，现在 codegen 由三部分组成</p>
+<ul>
+<li><code>assign_local_val_offsets</code>: 计算每个函数中局部变量的偏移</li>
+<li><code>emit_data</code>: 遍历全局变量构造 <code>.data</code> 段</li>
+<li><code>emit_text</code>: 遍历Function构造 <code>.text</code> 段</li>
+</ul>
+<p><code>.data</code> 段目前仅支持为每个全局变量创建一个标签，并零填充一段内存空间</p>
+<pre><code class="language-c">// 生成 .data 段
+//
+// 存放 全局变量
+static void emit_data(Object *prog) {
+  for (Object *var = prog; var; var = var-&gt;next) {
+    if (var-&gt;is_function)
+      continue;
+
+    printf(&quot;  # 数据段标签\n&quot;);
+    printf(&quot;  .data\n&quot;);
+    printf(&quot;  .globl %s\n&quot;, var-&gt;name);
+    printf(&quot;  # 全局变量%s\n&quot;, var-&gt;name);
+    printf(&quot;%s:\n&quot;, var-&gt;name);
+    printf(&quot;  # 零填充%d位\n&quot;, var-&gt;type-&gt;size);
+    printf(&quot;  .zero %d\n&quot;, var-&gt;type-&gt;size);
+  }
+}
+</code></pre>
+<p>对于 <code>ND_VAR</code> 地址的处理也区分了 local 与 global</p>
+<pre><code class="language-c">  case ND_VAR: // Object var 为指针, 在 prog 中被修改后, 同时也能从 Node 访问
+    if (node-&gt;var-&gt;is_local) { // local var
+      printf(&quot;  # 获取变量%s的栈内地址为%d(fp)\n&quot;, node-&gt;var-&gt;name,
+             node-&gt;var-&gt;offset);
+      printf(&quot;  addi a0, fp, %d\n&quot;, node-&gt;var-&gt;offset);
+    } else { // global var
+      printf(&quot;  # 获取全局变量%s的地址\n&quot;, node-&gt;var-&gt;name);
+      // la 指令是一个伪指令，将 %s symbol 标记的内存地址加载到 a0 中
+      printf(&quot;  la a0, %s\n&quot;, node-&gt;var-&gt;name);
+    }
+    return;
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="支持char类型"><a class="header" href="#支持char类型">支持Char类型</a></h1>
+<p>char 类型与 int 类型的不同之处在于占用的内存大小，当前类型系统中, int 占用 8byte 内存(与地址相同), 而 char 占用 1byte 内存</p>
+<h2 id="类型分析-4"><a class="header" href="#类型分析-4">类型分析</a></h2>
+<p>增加 <code>TY_CHAR</code> 枚举与 <code>TYPE_CHAR</code> 全局指针</p>
+<pre><code class="language-c">Type *TYPE_CHAR = &amp;(Type){TY_CHAR, 1};
+</code></pre>
+<h2 id="词法分析-15"><a class="header" href="#词法分析-15">词法分析</a></h2>
+<p>增加关键字 &quot;char&quot;</p>
+<h2 id="语法分析-21"><a class="header" href="#语法分析-21">语法分析</a></h2>
+<p>推导式修改，类型声明中支持了 &quot;char&quot;</p>
+<pre><code>// declspec = &quot;char&quot; | &quot;int&quot;
+</code></pre>
+<p>由于类型不再局限于 int, 因此增加 <code>is_typename</code> 方法来判断当前 token 是否是一个 type 关键字</p>
+<pre><code class="language-c">static bool is_typename(Token *token) {
+  return equal(token, &quot;char&quot;) | equal(token, &quot;int&quot;);
+}
+</code></pre>
+<h2 id="语义分析-18"><a class="header" href="#语义分析-18">语义分析</a></h2>
+<p>riscv 提供了操作不同位宽数据的能力，如对于 8bit 的char数据，可以使用 sb\lb 指令进行操作，相较于 sd\ld 指令，执行速度更快，因此有必要对不同大小type的数据，使用不同的指令进行优化</p>
+<pre><code class="language-c">// a0 中保存了一个地址
+// 将此地址的值加载到 a0 中
+static void load(Type *type) {
+  if (type-&gt;kind == TY_ARRAY)
+    return;
+  printf(&quot;  # 读取a0中存放的地址, 得到的值存入a0\n&quot;);
+  if (type-&gt;size == 1)
+    printf(&quot;  lb a0, 0(a0)\n&quot;);
+  else
+    printf(&quot;  ld a0, 0(a0)\n&quot;);
+}
+
+// 栈保存了一个地址
+// 将此地址 pop 到 a1 中
+// 将 a0 中的值保存到此地址
+static void store(Type *type) {
+  pop(&quot;a1&quot;);
+  printf(&quot;  # 将a0的值, 写入到 a1 中存放的地址\n&quot;);
+  if (type-&gt;size == 1)
+    printf(&quot;sb a0, 0(a1)\n&quot;);
+  else
+    printf(&quot;  sd a0, 0(a1)\n&quot;);
+}
+</code></pre>
+<p>对局部变量也进行类似的处理</p>
+<pre><code class="language-c">    for (Object *var = f-&gt;params; var; var = var-&gt;next) {
+      printf(&quot;  # 将%s寄存器的值存入%s的栈地址\n&quot;, func_arg_regs[i], var-&gt;name);
+      if (var-&gt;type-&gt;size == 1)
+        printf(&quot;  sb %s, %d(fp)\n&quot;, func_arg_regs[i++], var-&gt;offset);
+      else
+        printf(&quot;  sd %s, %d(fp)\n&quot;, func_arg_regs[i++], var-&gt;offset);
+    }
+</code></pre>
+<h1 id="支持字符串字面量"><a class="header" href="#支持字符串字面量">支持字符串字面量</a></h1>
+<p>形如 <code>&quot;foo&quot;</code> 这样硬编码在远代码中的字符串就是一种字面量</p>
+<ul>
+<li>注意: <code>char a = &quot;foo&quot;</code> 中，仅 &quot;foo&quot; 是字面量，在编译过程中，实际上将 &quot;foo&quot; 作为一个匿名的全局变量进行管理</li>
+<li>字面量的声明与赋值</li>
+<li>与早先实现的任何变量不同，字面量是一个匿名全局变量，需要编译器支持 匿名全局变量 的功能</li>
+</ul>
+<h2 id="词法分析-16"><a class="header" href="#词法分析-16">词法分析</a></h2>
+<p>字符串字面量为内嵌在代码中的 char 数组，词法分析过程中，遇到 <code>&quot;</code> 字符，便可认为是一个字符串字面量的起始</p>
+<ul>
+<li><code>TK_STR</code> 字面量的起始以 起/止 两个 <code>&quot;</code> 为界</li>
+<li><code>TK_STR</code> token 的 type 为</li>
+<li><code>str</code> 作为 <code>TK_STR</code> token 独有的字段，指向双引号所包括的字符数组(strndup进行保存)</li>
+<li><code>type</code> 作为 <code>TK_STR</code> token 独有的字段，在词法分析阶段，标记了字面量的类型为 array</li>
+</ul>
+<pre><code class="language-c">// 读取字符串字面量
+static Token *read_string_literal(char *start) {
+  // 形如 &quot;foo&quot; 的 token 即是 string literal
+  // 字符串中不能出现 \n 或 \0
+  char *p = start + 1;
+  for (; *p != '&quot;'; p++) {
+    if (*p == '\n' || *p == '\0')
+      error_at(start, &quot;unclosed string literal&quot;);
+  }
+
+  Token *token = new_token(TK_STR, start, p + 1);
+
+  // 字符串字面量类型为 char[]，包括了双引号
+  token-&gt;type = array_type(TYPE_CHAR, p - start);
+
+  // 将双引号内的内容拷贝到 token 中的 str 字段
+  token-&gt;str = strndup(start + 1, p - start - 1);
+  return token;
+}
+</code></pre>
+<h2 id="语法分析-22"><a class="header" href="#语法分析-22">语法分析</a></h2>
+<p>推导式变化</p>
+<pre><code>// primary = &quot;(&quot; expr &quot;)&quot; | &quot;sizeof&quot; unary | ident | fncall | str | num
+</code></pre>
+<p><code>TK_STR</code> token 需要以变量进行处理, 而区别于其他变量，字面量是一个全局匿名变量</p>
+<ul>
+<li>匿名变量同样需要唯一的名称，只不过由编译器生成</li>
+</ul>
+<pre><code class="language-c">// 生成唯一的变量名称(对匿名变量而言)
+static char *new_unique_name(void) {
+  static int id = 0;
+  char *buf = calloc(1, 20);
+
+  sprintf(buf, &quot;.L..%d&quot;, id++);
+  return buf;
+}
+
+// 创建匿名的 Global 变量
+static Object *new_anon_glabol_var(Type *type) {
+  return new_global_var(new_unique_name(), type);
+}
+
+// 新增字符串字面量
+static Object *new_string_literal(char *str, Type *type) {
+  Object *var = new_anon_glabol_var(type);
+  // 字面量的初始值为双引号包裹的部分，而不包括双引号
+  var-&gt;init_data = str;
+  return var;
+}
+</code></pre>
+<p>由于字符串字面量的值在词法分析阶段就能够确认，因此在语法分析过程中，只需要生成变量节点即可</p>
+<pre><code class="language-c">  if (token-&gt;kind == TK_STR) {
+    Object *var = new_string_literal(token-&gt;str, token-&gt;type);
+    *rest = token-&gt;next;
+    return new_node_var(var, token);
+  }
+</code></pre>
+<h2 id="语义分析-19"><a class="header" href="#语义分析-19">语义分析</a></h2>
+<p>早先实现的变量仅声明了对内存的使用，即指定了一片 栈上 或 .data 段上的内存空间，向这些内存写入内容需要显示地通过 赋值语句 来完成，而字面量是一个具有 初始值 的变量，或者说其在代码中的值是预编码的，因此在语义分析阶段，需要支持将初始值编码到代码中</p>
+<ul>
+<li>当前汇编中整体都为一个模块，因此任意 label 都可以被全局地进行访问</li>
+<li><code>.globl</code> 仅对修饰的 <code>main</code> 有意义，其所修饰的函数、全局变量，意味着能在连接过程中被其他代码引用，当前并无此作用</li>
+</ul>
+<pre><code class="language-c">// 生成 .data 段
+//
+// 存放 全局变量
+static void emit_data(Object *prog) {
+  for (Object *var = prog; var; var = var-&gt;next) {
+    if (var-&gt;is_function)
+      continue;
+
+    printf(&quot;  # 数据段标签\n&quot;);
+    printf(&quot;  .data\n&quot;);
+
+    // 判断变量是否有初始值
+    if (var-&gt;init_data) {
+      printf(&quot;%s:\n&quot;, var-&gt;name);
+      // 将初始值内容进行打印
+      for (int i = 0; i &lt; var-&gt;type-&gt;size; i++) {
+        char c = var-&gt;init_data[i];
+        if (isprint(c))
+          printf(&quot;  .byte %d\t# 字符:  %c\n&quot;, c, c);
+        else
+          printf(&quot;  .byte %d\n&quot;, c);
+      }
+    } else {
+      printf(&quot;  .globl %s\n&quot;, var-&gt;name);
+      printf(&quot;  # 全局变量%s\n&quot;, var-&gt;name);
+      printf(&quot;%s:\n&quot;, var-&gt;name);
+      printf(&quot;  # 零填充%d位\n&quot;, var-&gt;type-&gt;size);
+      printf(&quot;  .zero %d\n&quot;, var-&gt;type-&gt;size);
+    }
+  }
+}
+</code></pre>
+<h1 id="增加实用函数"><a class="header" href="#增加实用函数">增加实用函数</a></h1>
+<p><code>sprintf</code> 使用起来并不方便，因此增加一个 <code>format</code> 函数用来处理字符串</p>
+<pre><code class="language-c">// 格式化字符串
+char *format(char *fmt, ...) {
+  char *buf;
+  size_t len;
+
+  // 申请堆上内存并将起始地址保存到 buf 中
+  FILE *out = open_memstream(&amp;buf, &amp;len);
+
+  va_list va;
+  va_start(va, fmt);
+  vfprintf(out, fmt, va);
+  va_end(va);
+
+  fclose(out);
+  return buf;
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="支持多个转义字符"><a class="header" href="#支持多个转义字符">支持多个转义字符</a></h1>
+<p>转义字符是元字符的一种特殊情况, 一般通过 <code>\</code> 标识转义的开始，结合之后的字符来指定特定的字符</p>
+<ul>
+<li>转义字符是字面量中字符的特殊情况，因此需要在 tokenize 中进行特殊处理</li>
+</ul>
+<h2 id="词法分析-17"><a class="header" href="#词法分析-17">词法分析</a></h2>
+<p>需要支持对字面量中，形如 <code>\n</code> 的处理，即</p>
+<ul>
+<li>遍历输入，获取字符串字面量的结尾指针(右引号)</li>
+<li>创建一个 字符串字面量本身长度 + 1 的 buf, 将其中的内容初始化为全 '\0'</li>
+<li>再次遍历输入，当遇到 <code>\</code> 字符时，就进入 转义字符 处理函数，根据随后的一个字符转义得到真正的字符(不在转义列表中，则返回原字符)</li>
+</ul>
+<blockquote>
+<blockquote>
+<p>字符串中的 \n 是转义字符，本质仍然是字符，而按下回车时，会往文本中插入一个回车，这是转义字符 <code>\n</code> 所对应的真正的字符</p>
+</blockquote>
+</blockquote>
+<pre><code class="language-c">static char *read_string_literal_end(char *p) {
+  char *start = p;
+  for (; *p != '&quot;'; p++) {
+    if (*p == '\n' || *p == '\0') // 单行结尾
+      error_at(start, &quot;unclosed string literal&quot;);
+  }
+
+  return p;
+}
+</code></pre>
+<p>带有转义字符串的字符串字面量的解析</p>
+<pre><code class="language-c">// 读取字符串字面量
+//
+// 形如 &quot;foo&quot; 的 token 即是 string literal
+static Token *read_string_literal(char *start) {
+  char *end = read_string_literal_end(start + 1);
+
+  // 存储处理之后的字符串字面量, buf 大小为 总字符数 + 1
+  char *buf = calloc(1, end - start);
+  int real_len = 0;
+
+  // 遍历双引号包裹的部分
+  for (char *p = start + 1; p &lt; end;) {
+    if (*p == '\\') { // 解析转义
+      buf[real_len++] = read_escaped_char(p + 1);
+      p += 2;
+    } else
+      buf[real_len++] = *p++;
+  }
+
+  Token *token = new_token(TK_STR, start, end + 1);
+
+  // 字符串字面量类型为 char[]，包括了双引号
+  // 末尾多出的一位是 '\0' (calloc时进行的初始化)
+  token-&gt;type = array_type(TYPE_CHAR, real_len + 1);
+  token-&gt;str = buf;
+  return token;
+}
+</code></pre>
+<h1 id="支持8进制转义字符"><a class="header" href="#支持8进制转义字符">支持8进制转义字符</a></h1>
+<p>形如 <code>\20</code> 被认为时是一个 8 进制的转义字符，其应当被解释为 <code>16</code>, 编译器中需要支持最长3位的8进制转义字符解析</p>
+<ul>
+<li>由于此时不止依赖转义字符的后一位，因此需要在 read_escaped_char 的传入参数中增加一个指针用于移动</li>
+</ul>
+<h2 id="词法分析-18"><a class="header" href="#词法分析-18">词法分析</a></h2>
+<pre><code class="language-c">#define CHAR_OCTAL(x) '0' &lt;= x &amp;&amp;x &lt;= '7'
+
+// 读取转义字符
+// 返回字符本意的 char
+static int read_escaped_char(char **pos, char *p) {
+  if (CHAR_OCTAL(*p)) {
+    int num = *p++ - '0';
+
+    // 限制处理3位的8进制数
+    for (; CHAR_OCTAL(*p) &amp;&amp; p - *pos &lt; 4; p++) {
+      num = (num &lt;&lt; 3) + (*p - '0');
+    }
+
+    *pos = p;
+    return num;
+  }
+
+
+  ...
+</code></pre>
+<h1 id="支持16进制转义字符"><a class="header" href="#支持16进制转义字符">支持16进制转义字符</a></h1>
+<p>形如 <code>\xaff</code>即是16进制数，转义过程主要有两个部分</p>
+<ul>
+<li>将当前字符转义为十进制</li>
+<li>累计各个位上的值</li>
+</ul>
+<pre><code class="language-c">  if (*p == 'x') {
+    p++;
+    if (!isxdigit(*p))
+      error_at(p, &quot;invalid hex escape sequence&quot;);
+
+    int num = 0;
+    // 读取一位或多位十六进制数字
+    // \xWXYZ = ((W*16+X)*16+Y)*16+Z
+    for (; isxdigit(*p); p++) {
+      num = (num &lt;&lt; 4) + from_hex(*p);
+    }
+    *pos = p;
+    return num;
+  }
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="支持语句表达式"><a class="header" href="#支持语句表达式">支持语句表达式</a></h1>
+<p>表达式即 expr， 语句即 stmt，语句表达式是可以作为表达式的语句，即 <code>({ ... })</code></p>
+<p><img src="./images/stmt_expr.svg" alt="addr" /></p>
+<h2 id="词法分析-19"><a class="header" href="#词法分析-19">词法分析</a></h2>
+<p>语句表达式的类型是其中最后一个表达式语句lhs的类型</p>
+<ul>
+<li>无论return还是 &quot;x;&quot; 作为结尾，a0寄存器都将作为返回值存放的位置，此处类型即指a0寄存器中所保存数据的类型</li>
+</ul>
+<pre><code class="language-c">void add_type(Node *node) {
+  ...
+  case ND_STMT_EXPR:
+    // ND_STMT_EXPR类型为其中最后一个ND_EXPR_STMT lhs的类型
+    if (node-&gt;body) {
+      Node *stmt = node-&gt;body;
+      while (stmt-&gt;next)
+        stmt = stmt-&gt;next;
+      if (stmt-&gt;kind == ND_EXPR_STMT) {
+        node-&gt;type = stmt-&gt;lhs-&gt;type;
+        return;
+      }
+    }
+
+    error_token(node-&gt;token,
+                &quot;statement expression returning void is not supported&quot;);
+    return;
+    ...
+}
+</code></pre>
+<h2 id="语法分析-23"><a class="header" href="#语法分析-23">语法分析</a></h2>
+<p>primary语法分析中，增加对于语句表达式的解析</p>
+<pre><code>// primary = &quot;(&quot; &quot;{&quot; stmt+ &quot;}&quot; &quot;)&quot;
+//           | &quot;(&quot; expr &quot;)&quot;
+//           | &quot;sizeof&quot; unary
+//           | ident
+//           | fncall
+//           | str
+//           | num
+</code></pre>
+<p>primary中同时增加对于 <code>&quot;(&quot; &quot;{&quot; stmt+ &quot;}&quot; &quot;)&quot;</code> 的处理</p>
+<pre><code class="language-c">  if (equal(token, &quot;(&quot;) &amp;&amp; equal(token-&gt;next, &quot;{&quot;)) {
+    Node *node = new_node(ND_STMT_EXPR, token);
+    node-&gt;body = compound_stmt(&amp;token, token-&gt;next-&gt;next)-&gt;body;
+    *rest = skip(token, &quot;)&quot;);
+    return node;
+  }
+
+</code></pre>
+<h2 id="语义分析-20"><a class="header" href="#语义分析-20">语义分析</a></h2>
+<p>语义分析的表达式处理中，增加对于语句表达式的处理，即在 gen_expr 中，也可以有 gen_stmt</p>
+<pre><code class="language-c">void gen_expr(Node *node) {
+  ...
+  case ND_STMT_EXPR:
+    for (Node *n = node-&gt;body; n; n = n-&gt;next)
+      gen_stmt(n);
+    return;
+  ...
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="从文件中读取代码"><a class="header" href="#从文件中读取代码">从文件中读取代码</a></h1>
+<p>早期设计中，通过向tokenize传入字符串来启动编译流程，现在修改为传入文件路径，tokenize需要从文件中读取文本再开始编译流程，因此需要增加一个<code>read_file</code>函数，用来从文件中读取待编译的代码（文件包括标准输入）</p>
+<blockquote>
+<p>open_memstream会创建一个动态数组，并支持stream操作接口，在数组伸缩时变更堆上内存大小</p>
+</blockquote>
+<pre><code class="language-c">static char *read_file(char *path) {
+  FILE *in;
+
+  if (strcmp(path, &quot;-&quot;) == 0) {
+    // 文件名为 &quot;-&quot; 时，从stdin读取文本
+    in = stdin;
+  } else {
+    in = fopen(path, &quot;r&quot;);
+    if (!in)
+      error(&quot;can't open %s: %s&quot;, path, strerror(errno));
+  }
+
+  char *buf;
+  size_t buf_len;
+  // 创建out数据流，将in中的文本数据读取到流中
+  // buf指针指向out中的数据，buf_len为数据长度
+  FILE *out = open_memstream(&amp;buf, &amp;buf_len);
+
+  // 使用 read_buf 作为中转，将数据从 in 读取到 out 中
+  while (true) {
+    char *read_buf[4096];
+    int num_read = fread(read_buf, sizeof(char), sizeof(read_buf), in);
+    if (num_read == 0)
+      break;
+    fwrite(read_buf, sizeof(char), num_read, out);
+  }
+
+  if (in != stdin)
+    fclose(in);
+
+  // 刷新写缓冲区，保证所有内容都写入到 out 中
+  fflush(out);
+
+  // 保证以 `\n` 结尾
+  if (buf_len == 0 || buf[buf_len - 1] != '\n')
+    fputc('\n', out);
+
+  // 满足字符串以 `\0` 结尾的要求
+  fputc('\0', out);
+
+  return buf;
+}
+</code></pre>
+<p>同时，由于文件的引入，需要在编译错误时，给出更明确的错误定位</p>
+<pre><code class="language-c">// 指示错误出现的位置
+// foo.c:10: x = y + 1;
+//               ^ &lt;错误信息&gt;
+static void verror_at(char *loc, char *fmt, va_list va) {
+  char *start = loc, *end = loc;
+
+  // 移动 line 到 loc 所在行的起始位置
+  // CUR_INPUT是字符串的第一个字符
+  while (CUR_INPUT &lt; start &amp;&amp; start[-1] != '\n')
+    start--;
+
+  // 计算行号
+  // start 之前遇到 n 个 '\n'，意味着有 n 行
+  // 而 start 位于第 n + 1 行
+  int num_line = 1;
+  for (char *p = CUR_INPUT; p &lt; start; p++) {
+    if (*p == '\n')
+      num_line++;
+  }
+
+  // filename:line
+  // indent记录输出了多少个字符
+  int indent = fprintf(stderr, &quot;%s:%d&quot;, CUR_FILENAME, num_line);
+  // 输出存在错误的行到end为止的文本
+  fprintf(stderr, &quot;%.*s\n&quot;, (int)(end - start), start);
+
+  // 计算错误信息要添加的位点
+  int pos = loc - start + indent;
+
+  // %*s 将会打印 pos 长度的字符串，若参数不满足长度 pos ，则使用空格补全
+  fprintf(stderr, &quot;%*s&quot;, pos, &quot;&quot;);
+  // 指示符
+  fprintf(stderr, &quot;^ &quot;);
+  vfprintf(stderr, fmt, va);
+  fprintf(stderr, &quot;\n&quot;);
+  va_end(va);
+}
+</code></pre>
+<h1 id="增加println函数"><a class="header" href="#增加println函数">增加Println函数</a></h1>
+<p>封装 printf，仅仅为了方便</p>
+<h1 id="支持--o-与---help"><a class="header" href="#支持--o-与---help">支持 -o 与 --help</a></h1>
+<p><code>-o</code> 用以指示目标文件路径，<code>--help</code>用来显示帮助信息，而在代码中额外增加了参数解析的逻辑，并使用两个全局变量来保存解析结果</p>
+<pre><code class="language-c">static char *OUTPUT_PATH;
+static char *INPUT_PATH;
+
+static void parse_args(int argc, char **argv) {
+  for (int i = 1; i &lt; argc; i++) {
+    // 解析 -h | --help
+    if (!strcmp(argv[i], &quot;-h&quot;))
+      usage(0);
+
+    if (!strcmp(argv[i], &quot;--help&quot;))
+      usage(0);
+
+    // 解析 -o &lt;path&gt;
+    if (!strcmp(argv[i], &quot;-o&quot;)) {
+      // &lt;path&gt; 为空则报错
+      if (!argv[++i])
+        usage(1);
+      OUTPUT_PATH = argv[i];
+      continue;
+    }
+
+    // 解析 &lt;file&gt;
+    if (argv[i][0] == '-' &amp;&amp; argv[i][1] != '\0')
+      error(&quot;invalid argument: %s&quot;, argv[i]);
+
+    INPUT_PATH = argv[i];
+  }
+
+  if (!INPUT_PATH)
+    error(&quot;no input files&quot;);
+}
+</code></pre>
+<p>同时，在codegen中也增加了输出到文件的选项，得益于对printf函数的封装，修改只需要围绕println函数进行</p>
+<pre><code class="language-c">static void println(char *fmt, ...) {
+  va_list va;
+
+  // 初始化 va 变量，fmt是最后一个固定参数
+  va_start(va, fmt);
+  vfprintf(OUTPUT_FILE, fmt, va);
+  // 清理 va 变量
+  va_end(va);
+
+  fprintf(OUTPUT_FILE, &quot;\n&quot;);
+}
+</code></pre>
+<h1 id="支持注释"><a class="header" href="#支持注释">支持注释</a></h1>
+<p>注释仅用于说明，不参与代码的实际编译，支持注释首先需要确定注释的类型，如用于多行代码的块注释与用于单行代码的行注释，前者需要匹配开始与结尾，后者则需要匹配开头与<code>\n</code>，C标准中分别使用<code>/* ... */</code> 与 <code>//</code> 来标识上述注释。</p>
+<p>考虑到注释内容不参与实际编译，因此只需要再词法分析过程中找到响应标识，并去除对应代码文本即可</p>
+<h2 id="词法分析-20"><a class="header" href="#词法分析-20">词法分析</a></h2>
+<p>在读取文本的时候，跳过注释即可</p>
+<ul>
+<li>strstr函数能够在 haystack 字符串中寻找 needle 字符串的位置（起始指针），没有找到则返回NULL</li>
+</ul>
+<pre><code class="language-c">  while (*p) {
+    // 跳过行注释
+    if (starts_with(p, &quot;//&quot;)) {
+      p += 2;
+      while (*p != '\n')
+        p++;
+      continue;
+    }
+
+    // 跳过块注释
+    if (starts_with(p, &quot;/*&quot;)) {
+      // 在剩余字符串中寻找 &quot;*/&quot; 的位置
+      char *q = strstr(p + 2, &quot;*/&quot;);
+      if (!q)
+        error_at(p, &quot;unclosed block comment&quot;);
+      p = q + 2;
+      continue;
+    }
+...
+  }
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="处理域"><a class="header" href="#处理域">处理域</a></h1>
+<p>当前编译器支持代码块，但并未处理其中的变量，导致代码块可能出现重复的变量声明。重复的变量都属于局部变量。在parse旧的逻辑中，变量使用头插法插入到LOCALS中，越晚声明的变量越早被检索到。因此存在代码块中的变量作用域的问题。</p>
+<pre><code class="language-c">static Object *find_var_by_token(Token *token) {
+  for (Object *var = LOCALS; var; var = var-&gt;next) {
+    // 简单判断 -&gt; 负载判断, 提升效率
+    if (strlen(var-&gt;name) == token-&gt;len &amp;&amp;
+        !strncmp(token-&gt;loc, var-&gt;name, token-&gt;len))
+      return var;
+  }
+
+  // 查找全局变量中是否有同名变量
+  for (Object *var = GLOBALS; var; var = var-&gt;next) {
+    if (strlen(var-&gt;name) == token-&gt;len &amp;&amp;
+        !strncmp(token-&gt;loc, var-&gt;name, token-&gt;len))
+      return var;
+  }
+}
+</code></pre>
+<p>而为解决这一问题，引入代码域，使得块中的变量能够借助域来区分作用的范围。</p>
+<p><img src="./images/scope.svg" alt="scope" /></p>
+<h3 id="语法分析-24"><a class="header" href="#语法分析-24">语法分析</a></h3>
+<p>为描述域，引入域这一概念，包含块域与变量域。</p>
+<ul>
+<li>变量域：对变量作用域的描述。变量域通过链表连接，可以理解为是代码块的局部变量</li>
+<li>块域：用于描述代码块的链表</li>
+</ul>
+<pre><code class="language-c">// 局部和全局变量的域
+typedef struct VarScope VarScope;
+struct VarScope {
+  VarScope *next; // 下一变量域
+  char *name;     // 变量域名称
+  Object *var;    // 对应的变量
+};
+
+// 代码块域
+typedef struct BlockScope BlockScope;
+struct BlockScope {
+  BlockScope *next; // 指向上一级的域
+  VarScope *vars;   // 指向当前域内的变量
+};
+</code></pre>
+<p>BLOCK_SCOPES维护了块域的链表，BLOCK_SCOPES指针指向当前正在处理的块域</p>
+<ul>
+<li><code>enter_scope</code>: 对应与<code>{}</code>包含的部分，创建一个块域，并使用头插法插入</li>
+<li><code>leave_scope</code>: 退出当前块域</li>
+</ul>
+<pre><code class="language-c">// 所有域的链表
+static BlockScope *BLOCK_SCOPES = &amp;(BlockScope){};
+
+/**
+ * 进入块域
+ *
+ * 进入一个域，则将此域以头插法插入到BLOCK_SCOPES中
+ */
+static void enter_scope(void) {
+  BlockScope *scope = calloc(1, sizeof(BlockScope));
+  scope-&gt;next = BLOCK_SCOPES;
+  BLOCK_SCOPES = scope;
+}
+
+/**
+ * 离开块域
+ *
+ * 移动BLOCK_SCOPES至上一个块域（链表头的next）
+ */
+static void leave_scope(void) { BLOCK_SCOPES = BLOCK_SCOPES-&gt;next; }
+</code></pre>
+<p>引入域之后的变量检索逻辑</p>
+<ul>
+<li>变量检索时，从当前块域开始，依次向外层的块域进行</li>
+<li>子块域变量对父块域不可见，因此保证了变量的作用域</li>
+</ul>
+<pre><code class="language-c">/**
+ * 在所有块域中搜索与 ident token 同名的变量
+ *
+ * @param token 要检索的变量所属的token
+ *
+ * @return 匹配到的变量，没有找到则返回NULL
+ */
+static Object *find_var_by_token(Token *token) {
+
+  // 从当前块域开始检索
+  for (BlockScope *scope = BLOCK_SCOPES; scope; scope = scope-&gt;next) {
+    // 遍历此块域的所有变量
+    for (VarScope *var_scope = scope-&gt;vars; var_scope;
+         var_scope = var_scope-&gt;next) {
+      if (equal(token, var_scope-&gt;name))
+        return var_scope-&gt;var;
+    }
+  }
+  return NULL;
+}
+</code></pre>
+<p>处理代码块的额外操作，即在<code>{}</code>处进行块域的创建、进入与退出</p>
+<pre><code class="language-c">// compound_stmt = (declaration | stmt)* &quot;}&quot;
+PARSER_DEFINE(compound_stmt) {
+  ...
+  enter_scope();
+  ...
+  leave_scope();
+  ...
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="用c重写测试"><a class="header" href="#用c重写测试">用C重写测试</a></h1>
+<p>当前编译器已具备初步功能，能够与gcc编译工具链协作进行简单的代码编译，因此可以使用C来重新编写测试代码。</p>
+<p>测试程序都会引用 <code>test.h</code> 头文件，并首先由gcc编译器进行预处理，再交给rvcc编译为汇编代码。而最后的汇编代码会与common一起由gcc编译器编译并静态链接为一个二进制文件，交给qemu-riscv模拟器执行</p>
+<pre><code class="language-c">// test.h
+// assert函数在common中，并随后静态链接到最终代码中
+#define ASSERT(x, y) assert(x, y, #y)
+
+// arith.c
+#include &quot;test.h&quot;
+
+int main() {
+  // [1] 返回指定数值
+  ASSERT(0, 0);
+  ASSERT(42, 42);
+  // [2] 支持 + - 运算符
+  ASSERT(21, 5 + 20 - 4);
+  ...
+}
+
+</code></pre>
+<p>assert函数的具体作用如下，其由gcc编译器编译并静态链接到最终的二进制文件中。</p>
+<pre><code class="language-c">// common
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+void assert(int expected, int actual, char *code) {
+  if (expected == actual) {
+    printf(&quot;%s =&gt; %d\n&quot;, code, actual);
+  } else {
+    printf(&quot;%s =&gt; %d expected but got %d\n&quot;, code, expected, actual);
+    exit(1);
+  }
+}
+</code></pre>
+<blockquote>
+<p><code>-E</code>选项要求gcc编译器只进行预处理，<code>-P</code>选项要求编译器忽略<code>#line</code>指示符，<code>-C</code>要求gcc编译器保留注释，而 <code>-xc</code> 则要求gcc将输入文件视为c文件并进行编译</p>
+</blockquote>
+<p>测试脚本修改</p>
+<ul>
+<li><code>test/%.out</code> 规则：用于编译可由qemu-riscv执行的完整二进制文件</li>
+<li><code>test</code>：遍历所有编译好的<code>.out</code>文件，并调用qemu解释执行</li>
+</ul>
+<pre><code class="language-makefile"># 测试标签，运行测试
+test/%.out: rvcc test/%.c
+	$(RISCV)/bin/riscv64-unknown-linux-gnu-gcc -o- -E -P -C test/$*.c | ./rvcc -o test/$*.s -
+	$(RISCV)/bin/riscv64-unknown-linux-gnu-gcc -static -o $@ test/$*.s -xc test/common
+
+test: $(TESTS)
+	for i in $^; do echo $$i; $(RISCV)/bin/qemu-riscv64 -L $(RISCV)/sysroot ./$$i || exit 1; echo; done
+	test/driver.sh
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+    </div>
+    </body>
+</html>

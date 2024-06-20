@@ -26,26 +26,16 @@ void error(char *fmt, ...) {
 // 指示错误出现的位置
 // foo.c:10: x = y + 1;
 //               ^ <错误信息>
-static void verror_at(char *loc, char *fmt, va_list va) {
+static void verror_at(int line, char *loc, char *fmt, va_list va) {
   char *start = loc, *end = loc;
 
   // 移动 line 到 loc 所在行的起始位置
   // CUR_INPUT是字符串的第一个字符
   while (CUR_INPUT < start && start[-1] != '\n')
     start--;
-
-  // 计算行号
-  // start 之前遇到 n 个 '\n'，意味着有 n 行
-  // 而 start 位于第 n + 1 行
-  int num_line = 1;
-  for (char *p = CUR_INPUT; p < start; p++) {
-    if (*p == '\n')
-      num_line++;
-  }
-
   // filename:line
   // indent记录输出了多少个字符
-  int indent = fprintf(stderr, "%s:%d: ", CUR_FILENAME, num_line);
+  int indent = fprintf(stderr, "%s:%d: ", CUR_FILENAME, line);
   // 输出存在错误的行到end为止的文本
   fprintf(stderr, "%.*s\n", (int)(end - start), start);
 
@@ -63,9 +53,15 @@ static void verror_at(char *loc, char *fmt, va_list va) {
 
 // 指示错误信息并退出程序
 void error_at(char *loc, char *fmt, ...) {
+  int line = 1;
+  for (char *p = CUR_INPUT; p < loc; p++) {
+    if (*p == '\n')
+      line++;
+  }
+
   va_list va;
   va_start(va, fmt);
-  verror_at(loc, fmt, va);
+  verror_at(line, loc, fmt, va);
   exit(1);
 }
 
@@ -73,7 +69,7 @@ void error_at(char *loc, char *fmt, ...) {
 void error_token(Token *token, char *fmt, ...) {
   va_list va;
   va_start(va, fmt);
-  verror_at(token->loc, fmt, va);
+  verror_at(token->line, token->loc, fmt, va);
   exit(1);
 }
 
@@ -288,6 +284,25 @@ static Token *read_string_literal(char *start) {
   return token;
 }
 
+static void add_line_numbers(Token *token) {
+  char *p = CUR_INPUT;
+
+  // 计算行号
+  // start 之前遇到 n 个 '\n'，意味着有 n 行
+  // 而 start 位于第 n + 1 行
+  int n = 1;
+
+  do {
+    if (p == token->loc) {
+      token->line = n;
+      token = token->next;
+    }
+    if (*p == '\n')
+      n++;
+
+  } while (*p++);
+}
+
 // 终结符解析
 // head -> token1 -> token2 -> token3
 Token *tokenize(char *filename, char *p) {
@@ -368,6 +383,9 @@ Token *tokenize(char *filename, char *p) {
   // 解析结束之后追加一个 EOF
   cur->next = new_token(TK_EOF, p, p);
 
+  // 为所有token增加行号
+  add_line_numbers(head.next);
+  // 将所有keyword字符token类型修改为keyword
   convert_keywords(head.next);
 
   // head 实际是一个 dummy head

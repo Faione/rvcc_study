@@ -37,6 +37,7 @@ struct Token {
   Token *next;    // 下一个终结符
   char *loc;      // 在被解析字符串中的位置
   int len;        // 长度
+  int line;       // 行号
 
   union {
     // TK_NUM

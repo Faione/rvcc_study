@@ -300,7 +300,7 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
 //        "{" compoundStmt |
 //        expr_stmt
 // expr_stmt = expr? ";"
-// expr = assign
+// expr = assign ("," expr)?
 // assign = equality ("=" assign)?
 // equality = relational ("==" relational | "!=" relational)*
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
@@ -483,7 +483,7 @@ PARSER_DEFINE(declaration) {
     if (i++ > 0)
       token = skip(token, ",");
 
-    // 获取变量类型
+    // 获取变量类型（base_type, 或者嵌套base_type的指针）
     Type *type = declarator(&token, token, base_type);
     // 构造一个变量
     Object *var = new_local_var(get_ident(type->token), type);
@@ -587,8 +587,16 @@ PARSER_DEFINE(expr_stmt) {
   return node;
 }
 
-// expr = assign
-PARSER_DEFINE(expr) { return assign(rest, token); }
+// expr = assign ("," expr)?
+PARSER_DEFINE(expr) {
+  Node *node = assign(&token, token);
+
+  if (equal(token, ","))
+    return new_node_bin(ND_COMMA, node, expr(rest, token->next), token);
+
+  *rest = token;
+  return node;
+}
 
 // assign = equality ("=" assign)?
 PARSER_DEFINE(assign) {

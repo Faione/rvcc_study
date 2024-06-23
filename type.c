@@ -50,13 +50,10 @@ Type *array_type(Type *base, int len) {
   return type;
 }
 
-// 遍历 AST 并为所有 expr 及以下 NODE 增加类型
-void add_type(Node *node) {
-  // 节点为空，或者类型已经设置
-  if (!node || node->type)
-    return;
-
-  // 递归访问所有的子节点
+/*
+ * 由于使用了 union, 需要区分字段成员地进行处理
+ */
+void add_type_for_union(Node *node) {
   switch (node->kind) {
   case ND_ADD:
   case ND_SUB:
@@ -71,6 +68,7 @@ void add_type(Node *node) {
   case ND_RETURN:
   case ND_ADDR:
   case ND_DEREF:
+  case ND_COMMA:
   case ND_EXPR_STMT:
     add_type(node->lhs);
     add_type(node->rhs);
@@ -98,7 +96,19 @@ void add_type(Node *node) {
   default: // ND_VAR, ND_NUM
     break;
   }
+}
 
+// 遍历 AST 并为所有 expr 及以下 NODE 增加类型
+void add_type(Node *node) {
+  // 节点为空，或者类型已经设置
+  if (!node || node->type)
+    return;
+
+  // 递归访问所有的子节点，并赋予type
+  add_type_for_union(node);
+
+  // 递归到深处时，进行类型处理
+  // 需要区别不同的类型
   switch (node->kind) {
   case ND_ADD:
   case ND_SUB:
@@ -126,6 +136,8 @@ void add_type(Node *node) {
     // 变量节点的类型与变量节点中保存的 Object Var 的类型相同
     node->type = node->var->type;
     return;
+  case ND_COMMA:
+    node->type = node->rhs->type;
   case ND_ADDR: {
     Type *type = node->lhs->type;
 

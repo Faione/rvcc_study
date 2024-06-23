@@ -90,8 +90,13 @@ static void assign_local_val_offsets(Object *prog) {
   }
 }
 
-// 计算给定节点的内存地址
-// 将地址保存在 a0 寄存器中
+/**
+ * 计算节点中对象的内存地址, 并将地址保存在a0寄存器中
+ *
+ * ND_VAR, ND_DEREF, ND_COMMA
+ *
+ * @param node AST节点
+ */
 static void gen_addr(Node *node) {
 
   switch (node->kind) {
@@ -108,6 +113,12 @@ static void gen_addr(Node *node) {
     return;
   case ND_DEREF: // 对一个解引用expr进行取地址
     gen_expr(node->lhs);
+    return;
+  case ND_COMMA:
+    // 处理左臂表达式
+    gen_expr(node->lhs);
+    // 递归处理右臂，并将其结果作为地址进行返回
+    gen_addr(node->rhs);
     return;
   default:
     break;
@@ -140,8 +151,11 @@ static void store(Type *type) {
     println("  sd a0, 0(a1)");
 }
 
-// 词法分析
-// 生成代码
+/**
+ * 根据AST节点生成代码
+ *
+ * @param node AST节点
+ */
 void gen_expr(Node *node) {
   // .loc <文件编号> 行号
   println("  .loc 1 %d", node->token->line);
@@ -173,16 +187,21 @@ void gen_expr(Node *node) {
     load(node->type);
     return;
   case ND_ASSIGN:
-    // 左值
+    // 计算左值地址放到栈上
     gen_addr(node->lhs);
     push();
-    // 右值
+    // 计算右值并存到a0寄存器，再根据栈上地址保存到内存
     gen_expr(node->rhs);
     store(node->type);
     return;
   case ND_STMT_EXPR:
     for (Node *n = node->body; n; n = n->next)
       gen_stmt(n);
+    return;
+  case ND_COMMA:
+    // 依次从`,`左边处理到右边
+    gen_expr(node->lhs);
+    gen_expr(node->rhs);
     return;
   case ND_FNCALL: {
     int argc = 0;

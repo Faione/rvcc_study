@@ -9,6 +9,12 @@ static void usage(int status) {
   exit(status);
 }
 
+/**
+ * 解析传入参数，并保存在全局变量中
+ *
+ * @param argc 参数数量
+ * @param argv 参数地址
+ */
 static void parse_args(int argc, char **argv) {
   for (int i = 1; i < argc; i++) {
     // 解析 -h | --help

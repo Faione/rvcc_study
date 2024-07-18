@@ -99,7 +99,7 @@ Token *skip(Token *token, char *str) {
   return token->next;
 }
 
-// 尝试跳过 str, rest保存跳过之后的 Token*, 返回值表示是否跳过成功
+// 判断token内容是否与str相同，如相同则将rest移动到下一个token，并返回truc，否则将rest设置为当前token，并返回false
 bool consume(Token **rest, Token *token, char *str) {
   if (equal(token, str)) {
     // 移动到下一个
@@ -149,8 +149,8 @@ static int read_punct(char *p) {
 
 // 判断 ident token 是否在 keywords 中
 static bool is_keyword(Token *token) {
-  static char *keywords[] = {"return", "if",     "else", "for",
-                             "while",  "sizeof", "int",  "char"};
+  static char *keywords[] = {"return", "if",  "else", "for",   "while",
+                             "sizeof", "int", "char", "struct"};
 
   for (int i = 0; i < sizeof(keywords) / sizeof(*keywords); i++) {
     if (equal(token, keywords[i])) {

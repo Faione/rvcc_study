@@ -11,6 +11,7 @@
 
 typedef struct Node Node;
 typedef struct Type Type;
+typedef struct Member Member;
 
 //
 // 字符串处理
@@ -84,7 +85,8 @@ typedef enum {
   ND_LT,
   ND_LE,
   ND_ASSIGN,    // 赋值
-  ND_COMMA,     // 逗号
+  ND_COMMA,     // `,` 逗号
+  ND_MEMBER,    // `.` 访问结构体成员
   ND_ADDR,      // 取地址
   ND_DEREF,     // 解引用
   ND_RETURN,    // 返回
@@ -140,6 +142,8 @@ struct Node {
     struct {
       Node *lhs;
       Node *rhs;
+      // ND_MEMBER
+      Member *member;
     };
 
     // ND_VAR
@@ -189,11 +193,12 @@ void codegen(Object *prog, FILE *out);
 
 // 类型
 typedef enum {
-  TY_INT,   // int整形
-  TY_CHAR,  // char字符
-  TY_PTR,   // 指针类型
-  TY_FUNC,  // 函数类型
-  TY_ARRAY, // 数组
+  TY_INT,    // int整形
+  TY_CHAR,   // char字符
+  TY_PTR,    // 指针类型
+  TY_FUNC,   // 函数类型
+  TY_ARRAY,  // 数组
+  TY_STRUCT, // 结构体
 } TypeKind;
 
 struct Type {
@@ -214,7 +219,18 @@ struct Type {
       Type *params;   // 形参
       Type *next;     // 下一个类型
     };
+
+    // TY_STRUCT
+    Member *members;
   };
+};
+
+// AST中用于描述结构体成员的数据结构
+struct Member {
+  Member *next; // 下一成员
+  Type *type;   // 类型
+  Token *token; // 名称
+  int offset;   // 偏移量
 };
 
 // Type int

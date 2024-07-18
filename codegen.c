@@ -120,6 +120,12 @@ static void gen_addr(Node *node) {
     // 递归处理右臂，并将其结果作为地址进行返回
     gen_addr(node->rhs);
     return;
+  case ND_MEMBER:
+    gen_addr(node->lhs);
+    println("  # 计算成员变量的地址偏移量");
+    println("  li t0, %d", node->member->offset);
+    println("  add a0, a0, t0");
+    return;
   default:
     break;
   }
@@ -183,6 +189,7 @@ void gen_expr(Node *node) {
     load(node->type);
     return;
   case ND_VAR:
+  case ND_MEMBER:
     gen_addr(node);
     load(node->type);
     return;

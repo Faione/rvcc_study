@@ -69,6 +69,7 @@ void add_type_for_union(Node *node) {
   case ND_ADDR:
   case ND_DEREF:
   case ND_COMMA:
+  case ND_MEMBER:
   case ND_EXPR_STMT:
     add_type(node->lhs);
     add_type(node->rhs);
@@ -138,6 +139,10 @@ void add_type(Node *node) {
     return;
   case ND_COMMA:
     node->type = node->rhs->type;
+    return;
+  case ND_MEMBER:
+    node->type = node->member->type;
+    return;
   case ND_ADDR: {
     Type *type = node->lhs->type;
 

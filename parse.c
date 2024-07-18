@@ -101,7 +101,7 @@ static int get_num(Token *token) {
 
 // 判断是否为类型名称
 static bool is_typename(Token *token) {
-  return equal(token, "char") | equal(token, "int");
+  return equal(token, "char") | equal(token, "int") | equal(token, "struct");
 }
 
 /**
@@ -284,7 +284,7 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
 // function = declspec declarator "{" compound_stmt*
 // global_variable_def = declspec global_variable
 // global_variable = (declarator ("," declarator))* ";")*
-// declspec = "char" | "int"
+// declspec = "char" | "int" | struct_decl
 // declarator = "*"* ident type_suf
 // type_suf = "(" func_params | "[" num "]" type_suf | ε
 // func_params = param ("," param)*)? ")"
@@ -307,7 +307,9 @@ static Node *new_node_sub(Node *lhs, Node *rhs, Token *token) {
 // add = mul ("+" mul | "-" mul)*
 // mul = unary ("*" unary | "/" unary)*
 // unary = ("+" | "-" | "*" | "&") unary | postfix
-// postfix = primary ("[" expr "]")*
+// struct_members = (declspec declarator (","  declarator)* ";")*
+// struct_decl = "{" struct_members
+// postfix = primary ("[" expr "]" | "." ident)*
 // primary = "(" "{" stmt+ "}" ")"
 //           | "(" expr ")"
 //           | "sizeof" unary
@@ -330,6 +332,7 @@ PARSER_DEFINE(unary);
 PARSER_DEFINE(postfix);
 PARSER_DEFINE(primary);
 
+static Type *struct_decl(Token **rest, Token *token);
 static Type *declspec(Token **rest, Token *token);
 static Type *declarator(Token **rest, Token *token, Type *type);
 
@@ -395,19 +398,32 @@ static Type *type_suf(Token **rest, Token *token, Type *type) {
 }
 
 /**
- * declspec = "char" | "int"
+// declspec = "char" | "int" | struct_decl
  *
  * @param rest 指向剩余token指针的指针
  * @param token 正在处理的 token
  * @return 构造好的 Type。
  */
 static Type *declspec(Token **rest, Token *token) {
+  // char
   if (equal(token, "char")) {
     *rest = token->next;
     return TYPE_CHAR;
   }
-  *rest = skip(token, "int");
-  return TYPE_INT;
+
+  // int
+  if (equal(token, "int")) {
+    *rest = token->next;
+    return TYPE_INT;
+  }
+
+  // struct_decl
+  if (equal(token, "struct")) {
+    return struct_decl(rest, token->next);
+  }
+
+  error_token(token, "typename expected");
+  return NULL;
 }
 
 // declarator = "*"* ident type_suf
@@ -418,6 +434,7 @@ static Type *declspec(Token **rest, Token *token) {
  *
  * @param rest 指向剩余token指针的指针
  * @param token 正在处理的 token
+ * @param type 基础的类型
  * @return 构造好的 Type。
  */
 static Type *declarator(Token **rest, Token *token, Type *type) {
@@ -738,20 +755,132 @@ PARSER_DEFINE(unary) {
   return postfix(rest, token);
 }
 
-// postfix = primary ("[" expr "]")*
+/**
+ * struct_members = (declspec declarator (","  declarator)* ";")*
+ *
+ * 解析struct变量的成员类型
+ *
+ * @param rest 指向剩余token指针的指针
+ * @param token 正在处理的 token
+ * @param type 所属的struct类型
+ * @return 构造好的 Type。
+ */
+static void struct_members(Token **rest, Token *token, Type *type) {
+  Member head = {};
+  Member *cur = &head;
+
+  while (!equal(token, "}")) {
+    Type *base_type = declspec(&token, token);
+    int first = true;
+
+    // 形如 `int a, *b, c;`
+    while (!consume(&token, token, ";")) {
+      if (!first)
+        token = skip(token, ",");
+      first = false;
+
+      Member *member = calloc(1, sizeof(Member));
+      member->type = declarator(&token, token, base_type);
+      member->token = member->type->token;
+      cur = cur->next = member;
+    }
+  }
+
+  *rest = token->next;
+  // 此type为struct
+  type->members = head.next;
+}
+
+/**
+ * struct_decl = "{" struct_members
+ *
+ * 解析struct变量的成员类型
+ *
+ * @param rest 指向剩余token指针的指针
+ * @param token 正在处理的 token
+ * @param type 所属的struct类型
+ * @return 构造好的 Type。
+ */
+static Type *struct_decl(Token **rest, Token *token) {
+  token = skip(token, "{");
+
+  // 构造一个结构体
+  Type *type = calloc(1, sizeof(Type));
+  type->kind = TY_STRUCT;
+  struct_members(rest, token, type);
+
+  // 计算成员的偏移量
+  int offset = 0;
+  for (Member *member = type->members; member; member = member->next) {
+    member->offset = offset;
+    offset += member->type->size;
+  }
+  type->size = offset;
+  return type;
+}
+
+/**
+ * 从一个结构体类型中，使用名称获取结构体成员
+ *
+ * @param type 结构体类型
+ * @param token 结构体成员名称的token
+ * @return 检索到的结构体成员
+ */
+static Member *get_struct_member(Type *type, Token *token) {
+
+  for (Member *member = type->members; member; member = member->next) {
+    if (member->token->len == token->len &&
+        !strncmp(member->token->loc, token->loc, token->len))
+      return member;
+  }
+
+  error_token(token, "struct has no such member");
+  return NULL;
+}
+
+/**
+ * 构建结构体成员节点
+ *
+ * @param lhs 结构体AST节点
+ * @param token 成员的名称
+ * @return 构造好的结构体
+ */
+static Node *struct_ref(Node *lhs, Token *token) {
+  add_type(lhs);
+  if (lhs->type->kind != TY_STRUCT)
+    error_token(lhs->token, "not a struct");
+
+  // 成员为单臂节点，并指向struct类型的变量
+  Node *node = new_node_unary(ND_MEMBER, lhs, token);
+  node->member = get_struct_member(lhs->type, token);
+  return node;
+}
+
+// postfix = primary ("[" expr "]" | "." ident)*
 PARSER_DEFINE(postfix) {
   Node *node = primary(&token, token);
 
-  // x[][]...[]
-  while (equal(token, "[")) {
-    Token *start = token;
-    Node *index = expr(&token, token->next);
-    token = skip(token, "]");
-    node = new_node_unary(ND_DEREF, new_node_add(node, index, start), start);
-  }
+  while (true) {
+    // x[][]...[]
+    if (equal(token, "[")) {
+      // x[y] 等价于 *(x+y)
+      Token *start = token;
+      Node *index = expr(&token, token->next);
+      token = skip(token, "]");
+      node = new_node_unary(ND_DEREF, new_node_add(node, index, start), start);
+      continue;
+    }
 
-  *rest = token;
-  return node;
+    // x.y.z
+    if (equal(token, ".")) {
+      node = struct_ref(node, token->next);
+      token = token->next->next;
+      continue;
+    }
+
+    *rest = token;
+    return node;
+  }
 }
 
 // fncall = ident "(" (assign ("," assign)*)? ")"

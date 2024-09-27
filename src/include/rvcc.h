@@ -210,7 +210,7 @@ struct Type {
     // TY_PTR, TY_ARRAY
     struct {
       Type *base; // 为指针时，指向的类型; 为数组时,下标对应的类型
-      int len; // 为数组时，数组的长度
+      int len;    // 为数组时，数组的长度
     };
 
     // TY_FUNC

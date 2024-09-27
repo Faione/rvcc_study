@@ -1,0 +1,24 @@
+{
+    "image": "docvker.io/faione/c_dev:llvm-0.0.2",
+    "runArgs": [
+        "--network=host"
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "terminal.integrated.automationProfile.linux": {
+                    "path": "/usr/bin/zsh",
+                    // accept env from pre shell
+                    "env": {}
+                }
+            },
+            "extensions": [
+                "AdrienTecher.just-cant-git-enough",
+                "ms-vscode.cmake-tools",
+                "llvm-vs-code-extensions.vscode-clangd",
+                "vadimcn.vscode-lldb"
+            ]
+        }
+    }
+}

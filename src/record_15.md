@@ -57,3 +57,57 @@ test: $(TESTS)
 	for i in $^; do echo $$i; $(RISCV)/bin/qemu-riscv64 -L $(RISCV)/sysroot ./$$i || exit 1; echo; done
 	test/driver.sh
 ```
+
+# 支持`,`运算符
+
+`()` 中可以包含多个 expr， 这些 expr 使用 `,` 运算符隔开，其中最后一个 `expr` 将作为 `()` 中包含的所有 expr 在 `,` 运算下的结果。
+
+![scope](./images/comma.svg)
+
+## 语法分析
+
+增加新的节点类型，用来连接 `()` 中的不同 expr, Comma的类型由其右子节点的类型决定（对运算而言，是最后一个expr的类型）
+
+```c
+case ND_COMMA:
+  node->type = node->rhs->type;
+```
+
+同时，EXPR_STMT 现在可以由多个 EXPR 使用 COMMA 连接组成，因此递归下降中新增规则如下
+
+```c
+// expr = assign ("," expr)?
+```
+
+```c
+PARSER_DEFINE(expr) {
+  Node *node = assign(&token, token);
+
+  if (equal(token, ","))
+    return new_node_bin(ND_COMMA, node, expr(rest, token->next), token);
+
+  *rest = token;
+  return node;
+}
+```
+
+## 语义分析
+
+expr表达式处理过程中，对ND_COMMA从左向右处理
+
+```c
+  case ND_COMMA:
+    // 处理左臂表达式
+    gen_expr(node->lhs);
+    // 递归处理右臂，并将其结果作为地址进行返回
+    gen_addr(node->rhs);
+```
+
+变量地址计算中，将ND_COMMA运算的最后一个变量地址存放到寄存器中
+```c
+  case ND_COMMA:
+    // 处理左臂表达式
+    gen_expr(node->lhs);
+    // 递归处理右臂，并将其结果作为地址进行返回
+    gen_addr(node->rhs);
+```

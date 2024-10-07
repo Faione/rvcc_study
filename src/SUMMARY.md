@@ -15,3 +15,6 @@
 - [record_13](./record_13.md)
 - [record_14](./record_14.md)
 - [record_15](./record_15.md)
+- [record_16](./record_16.md)
+- [record_17](./record_17.md)
+- [record_18](./record_18.md)

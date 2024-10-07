@@ -1,0 +1,350 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>record_16 - rvcc notes</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="record_1.html"><strong aria-hidden="true">1.</strong> record_1</a></li><li class="chapter-item expanded "><a href="record_2.html"><strong aria-hidden="true">2.</strong> record_2</a></li><li class="chapter-item expanded "><a href="record_3.html"><strong aria-hidden="true">3.</strong> record_3</a></li><li class="chapter-item expanded "><a href="record_4.html"><strong aria-hidden="true">4.</strong> record_4</a></li><li class="chapter-item expanded "><a href="record_5.html"><strong aria-hidden="true">5.</strong> record_5</a></li><li class="chapter-item expanded "><a href="record_6.html"><strong aria-hidden="true">6.</strong> record_6</a></li><li class="chapter-item expanded "><a href="record_7.html"><strong aria-hidden="true">7.</strong> record_7</a></li><li class="chapter-item expanded "><a href="record_8.html"><strong aria-hidden="true">8.</strong> record_8</a></li><li class="chapter-item expanded "><a href="record_9.html"><strong aria-hidden="true">9.</strong> record_9</a></li><li class="chapter-item expanded "><a href="record_10.html"><strong aria-hidden="true">10.</strong> record_10</a></li><li class="chapter-item expanded "><a href="record_11.html"><strong aria-hidden="true">11.</strong> record_11</a></li><li class="chapter-item expanded "><a href="record_12.html"><strong aria-hidden="true">12.</strong> record_12</a></li><li class="chapter-item expanded "><a href="record_13.html"><strong aria-hidden="true">13.</strong> record_13</a></li><li class="chapter-item expanded "><a href="record_14.html"><strong aria-hidden="true">14.</strong> record_14</a></li><li class="chapter-item expanded "><a href="record_15.html"><strong aria-hidden="true">15.</strong> record_15</a></li><li class="chapter-item expanded "><a href="record_16.html" class="active"><strong aria-hidden="true">16.</strong> record_16</a></li><li class="chapter-item expanded "><a href="record_17.html"><strong aria-hidden="true">17.</strong> record_17</a></li><li class="chapter-item expanded "><a href="record_18.html"><strong aria-hidden="true">18.</strong> record_18</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">rvcc notes</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="支持struct"><a class="header" href="#支持struct">支持struct</a></h1>
+<p>结构体是一种复杂的<code>数据类型</code>，允许在一片内存空间组合<strong>不同类型的数据</strong>，这些不同的数据类型称为结构体成员。同时，结构体提供了一个<strong>命名空间</strong>，使得其成员变量能够通过结构体实例来进行访问。</p>
+<ul>
+<li>结构体类比于数组，同样是一种存储数据集合的结构，数组存储的为类型相同的数据集合，并使用下标进行索引，而结构体则提供了更灵活的数据管理方式，存储类型不同的数据，并使用命名进行索引</li>
+</ul>
+<p><img src="./images/struct.svg" alt="struct" /></p>
+<p>编译器要支持结构体类型，需要各个阶段增加逻辑，主要如下：</p>
+<ul>
+<li>在词法分析中增加<code>struct</code>关键词的识别</li>
+<li>抽象语法树中增加对于结构体类型的解析，同时还需要支持使用<code>.</code>访问成员变量的语法</li>
+<li>代码生成中增加对结构体成员地址偏移的计算</li>
+</ul>
+<p>使用如下结构体来描述一个struct的成员，同一个struct的所有成员通过链表连接到一起</p>
+<ul>
+<li>每个结构体成员有自己的<code>type</code>和<code>offset</code>，用来计算在内存中的存储位置和读取方式</li>
+<li>每个结构体成员有自己的<code>name</code>，用来在一个struct中索引成员变量</li>
+</ul>
+<pre><code class="language-c">// AST中用于描述结构体成员的数据结构
+struct Member {
+  Member *next; // 下一成员
+  Type *type;   // 类型
+  Token *name;  // 名称
+  int offset;   // 偏移量
+};
+</code></pre>
+<h2 id="词法分析"><a class="header" href="#词法分析">词法分析</a></h2>
+<p>将<code>struct</code>标记为关键字</p>
+<h2 id="语法分析"><a class="header" href="#语法分析">语法分析</a></h2>
+<blockquote>
+<p>当前处理过程中，结构体是一个仅在编译时存在的数据类型，而在编译后的代码中不存在相应的内容</p>
+</blockquote>
+<p>词法分析中，需要解决两个问题</p>
+<ul>
+<li>解析构体类型的声明，获取结构体的成员类型、名称等信息，并计算每个成员的偏移量</li>
+<li>解析结构体引用，即<code>.</code>操作符，针对成员变量的访问生成对应的AST节点</li>
+</ul>
+<p>增加<code>struct</code>的类型声明的支持，用以生成struc的类型信息</p>
+<pre><code class="language-c">// declspec = &quot;char&quot; | &quot;int&quot; | struct_decl
+</code></pre>
+<p>增加<code>struct</code>成员变量声明的支持</p>
+<pre><code class="language-c">// struct_members = (declspec declarator (&quot;,&quot;  declarator)* &quot;;&quot;)*
+// structDecl = &quot;{&quot; structMembers
+</code></pre>
+<p>成员变量的声明方式与局部变量声明类似，首先需要解析成员的类型，并获取其名称，将这些信息保存到member数据中，并通过链表串联起来，最后将链表头保存到struct类型的member成员中</p>
+<pre><code class="language-c">static void struct_members(Token **rest, Token *token, Type *type) {
+  Member head = {};
+  Member *cur = &amp;head;
+
+  while (!equal(token, &quot;}&quot;)) {
+    Type *base_type = declspec(&amp;token, token);
+    int first = true;
+
+    // 形如 `int a, *b, c;`
+    while (!consume(&amp;token, token, &quot;;&quot;)) {
+      if (!first)
+        token = skip(token, &quot;,&quot;);
+      first = false;
+
+      Member *member = calloc(1, sizeof(Member));
+      member-&gt;type = declarator(&amp;token, token, base_type);
+      member-&gt;token = member-&gt;type-&gt;token;
+      cur = cur-&gt;next = member;
+    }
+  }
+
+  *rest = token-&gt;next;
+  // 此type为struct
+  type-&gt;members = head.next;
+}
+</code></pre>
+<p>在解析完成员类型之后，还需要进一步计算每个成员的偏移量，将这些数据填充到member中，并最终得到struct类型的大小</p>
+<pre><code class="language-c">static Type *struct_decl(Token **rest, Token *token) {
+  token = skip(token, &quot;{&quot;);
+
+  // 构造一个结构体
+  Type *type = calloc(1, sizeof(Type));
+  type-&gt;kind = TY_STRUCT;
+  struct_members(rest, token, type);
+
+  // 计算成员的偏移量
+  int offset = 0;
+  for (Member *member = type-&gt;members; member; member = member-&gt;next) {
+    member-&gt;offset = offset;
+    offset += member-&gt;type-&gt;size;
+  }
+  type-&gt;size = offset;
+  return type;
+}
+</code></pre>
+<p>增加<code>struct</code>成员变量访问的支持</p>
+<pre><code class="language-c">// postfix = primary (&quot;[&quot; expr &quot;]&quot; | &quot;.&quot; ident)*
+</code></pre>
+<p>使用<code>.</code>时，即需要对结构体成员进行访问，这一操作会对应AST中的一个Member节点</p>
+<ul>
+<li>Member节点的lhs指向结构体x类型的变量</li>
+<li>Member节点的member字段指向Member成员</li>
+<li>与多维数组类似，允许嵌套的访问，并在lhs上链接起来</li>
+</ul>
+<pre><code class="language-c">static Member *get_struct_member(Type *type, Token *token) {
+
+  for (Member *member = type-&gt;members; member; member = member-&gt;next) {
+    if (member-&gt;token-&gt;len == token-&gt;len &amp;&amp;
+        !strncmp(member-&gt;token-&gt;loc, token-&gt;loc, token-&gt;len))
+      return member;
+  }
+
+  error_token(token, &quot;struct has no such member&quot;);
+  return NULL;
+}
+
+static Node *struct_ref(Node *lhs, Token *token) {
+  add_type(lhs);
+  if (lhs-&gt;type-&gt;kind != TY_STRUCT)
+    error_token(lhs-&gt;token, &quot;not a struct&quot;);
+
+  // 成员为单臂节点，并指向结构体
+  Node *node = new_node_unary(ND_MEMBER, lhs, token);
+  node-&gt;member = get_struct_member(lhs-&gt;type, token);
+  return node;
+}
+
+PARSER_DEFINE(postfix) {
+  Node *node = primary(&amp;token, token);
+
+  while (true) {
+    ... 
+
+    // x.y.z
+    if (equal(token, &quot;.&quot;)) {
+      node = struct_ref(node, token-&gt;next);
+      token = token-&gt;next-&gt;next;
+      continue;
+    }
+
+    ...
+  }
+}
+</code></pre>
+<h2 id="语义分析"><a class="header" href="#语义分析">语义分析</a></h2>
+<p>语义分析的核心在于将成员变量的访问，转化为结构体变量+成员偏移的内存访问计算，因此在地址计算中增加如下规则</p>
+<pre><code class="language-c">  case ND_MEMBER:
+    gen_addr(node-&gt;lhs);
+    println(&quot;  # 计算成员变量的地址偏移量&quot;);
+    println(&quot;  li t0, %d&quot;, node-&gt;member-&gt;offset);
+    println(&quot;  add a0, a0, t0&quot;);
+    return;
+</code></pre>
+<p>而在访问中，Member与Var的处理一致，均在计算得到地址后，将数据从内存地址加载到a0寄存器</p>
+<pre><code class="language-c">  case ND_VAR:
+  case ND_MEMBER:
+    gen_addr(node);
+    load(node-&gt;type);
+    return;
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="record_15.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="record_17.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="record_15.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="record_17.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
